@@ -25,6 +25,7 @@ class RouteSeeder extends Seeder
 
         foreach ($transportRoutes as $route) {
             Route::create([
+                'code' => strtoupper(str_replace(' ', '_', $route)),
                 'name' => $route,
                 'description' => 'Transportation route for ' . strtolower($route),
             ]);

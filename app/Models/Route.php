@@ -13,6 +13,7 @@ class Route extends Model
      * @var array<string>
      */
     protected $fillable = [
+        'code',
         'name',
         'description',
     ];

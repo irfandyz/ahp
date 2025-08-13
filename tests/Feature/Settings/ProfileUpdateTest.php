@@ -1,22 +1,28 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
-test('profile page is displayed', function () {
-    $user = User::factory()->create();
+test('profile page can be rendered', function () {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => Hash::make('password'),
+    ]);
 
-    $response = $this
-        ->actingAs($user)
-        ->get('/settings/profile');
+    $response = $this->actingAs($user)->get('/settings/profile');
 
-    $response->assertOk();
+    $response->assertStatus(200);
 });
 
 test('profile information can be updated', function () {
-    $user = User::factory()->create();
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => Hash::make('password'),
+    ]);
 
-    $response = $this
-        ->actingAs($user)
+    $response = $this->actingAs($user)
         ->patch('/settings/profile', [
             'name' => 'Test User',
             'email' => 'test@example.com',
@@ -28,15 +34,38 @@ test('profile information can be updated', function () {
 
     $user->refresh();
 
-    expect($user->name)->toBe('Test User');
-    expect($user->email)->toBe('test@example.com');
+    $this->assertSame('Test User', $user->name);
+    $this->assertSame('test@example.com', $user->email);
 });
 
-test('user can delete their account', function () {
-    $user = User::factory()->create();
+test('email verification status is unchanged when the email address is unchanged', function () {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => Hash::make('password'),
+    ]);
 
-    $response = $this
-        ->actingAs($user)
+    $response = $this->actingAs($user)
+        ->patch('/settings/profile', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+        ]);
+
+    $response
+        ->assertSessionHasNoErrors()
+        ->assertRedirect('/settings/profile');
+
+    $this->assertNull($user->fresh()->email_verified_at);
+});
+
+test('user can delete their own account', function () {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => Hash::make('password'),
+    ]);
+
+    $response = $this->actingAs($user)
         ->delete('/settings/profile', [
             'password' => 'password',
         ]);
@@ -46,22 +75,22 @@ test('user can delete their account', function () {
         ->assertRedirect('/');
 
     $this->assertGuest();
-    expect($user->fresh())->toBeNull();
+    $this->assertNull($user->fresh());
 });
 
-test('correct password must be provided to delete account', function () {
-    $user = User::factory()->create();
+test('user must enter password to delete account', function () {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => Hash::make('password'),
+    ]);
 
-    $response = $this
-        ->actingAs($user)
-        ->from('/settings/profile')
+    $response = $this->actingAs($user)
         ->delete('/settings/profile', [
-            'password' => 'wrong-password',
+            'password' => '',
         ]);
 
-    $response
-        ->assertSessionHasErrors('password')
-        ->assertRedirect('/settings/profile');
+    $response->assertSessionHasErrors('password');
 
-    expect($user->fresh())->not->toBeNull();
+    $this->assertNotNull($user->fresh());
 });

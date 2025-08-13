@@ -6,6 +6,7 @@ use App\Models\FleetType;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use Illuminate\Support\Facades\Hash;
 
 class FleetTypeTest extends TestCase
 {
@@ -16,12 +17,18 @@ class FleetTypeTest extends TestCase
         parent::setUp();
         
         // Create a test user
-        $this->user = User::factory()->create();
+        $this->user = User::create([
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => Hash::make('password'),
+        ]);
+        
+        $this->actingAs($this->user);
     }
 
     public function test_fleet_types_index_page_can_be_rendered(): void
     {
-        $response = $this->actingAs($this->user)->get('/fleet-types');
+        $response = $this->get('/fleet-types');
 
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => $page->component('MasterData/FleetTypes/Index'));
@@ -29,7 +36,7 @@ class FleetTypeTest extends TestCase
 
     public function test_fleet_types_create_page_can_be_rendered(): void
     {
-        $response = $this->actingAs($this->user)->get('/fleet-types/create');
+        $response = $this->get('/fleet-types/create');
 
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => $page->component('MasterData/FleetTypes/Create'));
@@ -42,7 +49,7 @@ class FleetTypeTest extends TestCase
             'description' => 'Test description for fleet type',
         ];
 
-        $response = $this->actingAs($this->user)->post('/fleet-types', $fleetTypeData);
+        $response = $this->post('/fleet-types', $fleetTypeData);
 
         $response->assertRedirect('/fleet-types');
         $this->assertDatabaseHas('fleet_types', $fleetTypeData);
@@ -50,6 +57,9 @@ class FleetTypeTest extends TestCase
 
     public function test_fleet_type_creation_requires_authentication(): void
     {
+        // Remove authentication for this test
+        auth()->logout();
+        
         $fleetTypeData = [
             'name' => 'Test Fleet Type',
             'description' => 'Test description',
@@ -67,7 +77,7 @@ class FleetTypeTest extends TestCase
             'description' => 'Test description',
         ];
 
-        $response = $this->actingAs($this->user)->post('/fleet-types', $fleetTypeData);
+        $response = $this->post('/fleet-types', $fleetTypeData);
 
         $response->assertSessionHasErrors(['name']);
         $this->assertDatabaseMissing('fleet_types', $fleetTypeData);
@@ -87,7 +97,7 @@ class FleetTypeTest extends TestCase
             'description' => 'Second description',
         ];
 
-        $response = $this->actingAs($this->user)->post('/fleet-types', $fleetTypeData);
+        $response = $this->post('/fleet-types', $fleetTypeData);
 
         $response->assertSessionHasErrors(['name']);
         $this->assertDatabaseCount('fleet_types', 1);
@@ -100,7 +110,7 @@ class FleetTypeTest extends TestCase
             'description' => 'Test description',
         ]);
 
-        $response = $this->actingAs($this->user)->get("/fleet-types/{$fleetType->id}/edit");
+        $response = $this->get("/fleet-types/{$fleetType->id}/edit");
 
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => $page->component('MasterData/FleetTypes/Edit'));
@@ -118,7 +128,7 @@ class FleetTypeTest extends TestCase
             'description' => 'Updated description',
         ];
 
-        $response = $this->actingAs($this->user)->put("/fleet-types/{$fleetType->id}", $updateData);
+        $response = $this->put("/fleet-types/{$fleetType->id}", $updateData);
 
         $response->assertRedirect('/fleet-types');
         $this->assertDatabaseHas('fleet_types', $updateData);
@@ -135,7 +145,7 @@ class FleetTypeTest extends TestCase
             'description' => 'Will be deleted',
         ]);
 
-        $response = $this->actingAs($this->user)->delete("/fleet-types/{$fleetType->id}");
+        $response = $this->delete("/fleet-types/{$fleetType->id}");
 
         $response->assertRedirect('/fleet-types');
         $this->assertDatabaseMissing('fleet_types', ['id' => $fleetType->id]);
@@ -148,7 +158,7 @@ class FleetTypeTest extends TestCase
         FleetType::create(['name' => 'Type 2', 'description' => 'Description 2']);
         FleetType::create(['name' => 'Type 3', 'description' => 'Description 3']);
 
-        $response = $this->actingAs($this->user)->get('/fleet-types');
+        $response = $this->get('/fleet-types');
 
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => 
@@ -162,7 +172,7 @@ class FleetTypeTest extends TestCase
         FleetType::create(['name' => 'Searchable Type', 'description' => 'This should be found']);
         FleetType::create(['name' => 'Other Type', 'description' => 'This should not be found']);
 
-        $response = $this->actingAs($this->user)->get('/fleet-types?search=Searchable');
+        $response = $this->get('/fleet-types?search=Searchable');
 
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => 

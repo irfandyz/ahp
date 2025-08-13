@@ -2,15 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Fleet extends Model
 {
-    use HasFactory;
-
     /**
      * The attributes that are mass assignable.
      *
@@ -23,7 +20,7 @@ class Fleet extends Model
     ];
 
     /**
-     * Get the fleet type for this fleet.
+     * Get the fleet type that owns the fleet.
      */
     public function fleetType(): BelongsTo
     {

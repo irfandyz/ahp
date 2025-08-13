@@ -2,83 +2,396 @@
 
 namespace Tests\Feature;
 
-use App\Models\Category;
+use App\Models\Customer;
+use App\Models\Driver;
 use App\Models\Expedition;
+use App\Models\ExpeditionCostFleet;
+use App\Models\ExpeditionCostVendor;
+use App\Models\Fleet;
+use App\Models\FleetType;
 use App\Models\IndustrySector;
+use App\Models\Route;
 use App\Models\User;
 use App\Models\Vendor;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use Illuminate\Support\Facades\Hash;
 
-class ModelRelationshipsTest extends TestCase
-{
-    use RefreshDatabase;
+test('user can have multiple expeditions', function () {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => Hash::make('password'),
+    ]);
+    
+    $customer = Customer::create([
+        'name' => 'Test Customer',
+        'address' => 'Test Address',
+        'phone' => '+62-123-456-789',
+        'email' => 'test@customer.com',
+        'npwp' => '12.345.678.9-123.456',
+        'pic_name' => 'Test PIC',
+        'pic_phone' => '+62-987-654-321',
+    ]);
+    
+    $industrySector = IndustrySector::create([
+        'name' => 'Test Sector',
+        'description' => 'Test Description',
+    ]);
+    
+    $route = Route::create([
+        'code' => 'TEST_ROUTE_1',
+        'name' => 'Test Route',
+        'description' => 'Test Route Description',
+    ]);
+    
+    $vendor = Vendor::create([
+        'company' => 'Test Vendor',
+        'address' => 'Test Address',
+        'city' => 'Test City',
+        'pic' => 'Test PIC',
+        'title_pic' => 'Manager',
+        'phone' => '+62-123-456-789',
+        'moda' => 'Truck',
+        'fleet' => 'Medium',
+        'area_service_coverage' => 'Jakarta, Surabaya',
+    ]);
+    
+    $expedition = Expedition::create([
+        'order_number' => 'EXP-TEST-001',
+        'user_id' => $user->id,
+        'customer_id' => $customer->id,
+        'input_date' => now(),
+        'travel_date' => now()->addDays(2),
+        'origin' => 'Jakarta',
+        'destination' => 'Surabaya',
+        'distance' => 500,
+        'description' => 'Test expedition',
+        'industry_sector_id' => $industrySector->id,
+        'route_id' => $route->id,
+        'detail_route' => 'PP',
+        'expedition_type' => 'vendor',
+        'vendor_id' => $vendor->id,
+        'fleet_id' => null,
+        'driver_id' => null,
+        'eta' => 3,
+    ]);
 
-    public function test_user_has_many_expeditions(): void
-    {
-        $user = User::factory()->create();
-        $expedition = Expedition::factory()->create(['user_id' => $user->id]);
+    expect($user->expeditions)->toHaveCount(1);
+    expect($user->expeditions->first()->id)->toBe($expedition->id);
+});
 
-        $this->assertTrue($user->expeditions->contains($expedition));
-        $this->assertEquals(1, $user->expeditions->count());
-    }
+test('expedition belongs to user', function () {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => Hash::make('password'),
+    ]);
+    
+    $customer = Customer::create([
+        'name' => 'Test Customer',
+        'address' => 'Test Address',
+        'phone' => '+62-123-456-789',
+        'email' => 'test@customer.com',
+        'npwp' => '12.345.678.9-123.456',
+        'pic_name' => 'Test PIC',
+        'pic_phone' => '+62-987-654-321',
+    ]);
+    
+    $industrySector = IndustrySector::create([
+        'name' => 'Test Sector',
+        'description' => 'Test Description',
+    ]);
+    
+    $route = Route::create([
+        'code' => 'TEST_ROUTE_2',
+        'name' => 'Test Route',
+        'description' => 'Test Route Description',
+    ]);
+    
+    $vendor = Vendor::create([
+        'company' => 'Test Vendor',
+        'address' => 'Test Address',
+        'city' => 'Test City',
+        'pic' => 'Test PIC',
+        'title_pic' => 'Manager',
+        'phone' => '+62-123-456-789',
+        'moda' => 'Truck',
+        'fleet' => 'Medium',
+        'area_service_coverage' => 'Jakarta, Surabaya',
+    ]);
+    
+    $expedition = Expedition::create([
+        'order_number' => 'EXP-TEST-002',
+        'user_id' => $user->id,
+        'customer_id' => $customer->id,
+        'input_date' => now(),
+        'travel_date' => now()->addDays(2),
+        'origin' => 'Jakarta',
+        'destination' => 'Surabaya',
+        'distance' => 500,
+        'description' => 'Test expedition',
+        'industry_sector_id' => $industrySector->id,
+        'route_id' => $route->id,
+        'detail_route' => 'PP',
+        'expedition_type' => 'vendor',
+        'vendor_id' => $vendor->id,
+        'fleet_id' => null,
+        'driver_id' => null,
+        'eta' => 3,
+    ]);
 
-    public function test_expedition_belongs_to_user(): void
-    {
-        $user = User::factory()->create();
-        $expedition = Expedition::factory()->create(['user_id' => $user->id]);
+    expect($expedition->user->id)->toBe($user->id);
+});
 
-        $this->assertEquals($user->id, $expedition->user->id);
-    }
+test('industry sector can have multiple expeditions', function () {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => Hash::make('password'),
+    ]);
+    
+    $customer = Customer::create([
+        'name' => 'Test Customer',
+        'address' => 'Test Address',
+        'phone' => '+62-123-456-789',
+        'email' => 'test@customer.com',
+        'npwp' => '12.345.678.9-123.456',
+        'pic_name' => 'Test PIC',
+        'pic_phone' => '+62-987-654-321',
+    ]);
+    
+    $industrySector = IndustrySector::create([
+        'name' => 'Test Sector',
+        'description' => 'Test Description',
+    ]);
+    
+    $route = Route::create([
+        'code' => 'TEST_ROUTE_3',
+        'name' => 'Test Route',
+        'description' => 'Test Route Description',
+    ]);
+    
+    $vendor = Vendor::create([
+        'company' => 'Test Vendor',
+        'address' => 'Test Address',
+        'city' => 'Test City',
+        'pic' => 'Test PIC',
+        'title_pic' => 'Manager',
+        'phone' => '+62-123-456-789',
+        'moda' => 'Truck',
+        'fleet' => 'Medium',
+        'area_service_coverage' => 'Jakarta, Surabaya',
+    ]);
+    
+    $expedition = Expedition::create([
+        'order_number' => 'EXP-TEST-003',
+        'user_id' => $user->id,
+        'customer_id' => $customer->id,
+        'input_date' => now(),
+        'travel_date' => now()->addDays(2),
+        'origin' => 'Jakarta',
+        'destination' => 'Surabaya',
+        'distance' => 500,
+        'description' => 'Test expedition',
+        'industry_sector_id' => $industrySector->id,
+        'route_id' => $route->id,
+        'detail_route' => 'PP',
+        'expedition_type' => 'vendor',
+        'vendor_id' => $vendor->id,
+        'fleet_id' => null,
+        'driver_id' => null,
+        'eta' => 3,
+    ]);
 
-    public function test_industry_sector_has_many_expeditions(): void
-    {
-        $industrySector = IndustrySector::factory()->create();
-        $expedition = Expedition::factory()->create(['industry_sector_id' => $industrySector->id]);
+    expect($industrySector->expeditions)->toHaveCount(1);
+    expect($industrySector->expeditions->first()->id)->toBe($expedition->id);
+});
 
-        $this->assertTrue($industrySector->expeditions->contains($expedition));
-        $this->assertEquals(1, $industrySector->expeditions->count());
-    }
+test('expedition belongs to industry sector', function () {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => Hash::make('password'),
+    ]);
+    
+    $customer = Customer::create([
+        'name' => 'Test Customer',
+        'address' => 'Test Address',
+        'phone' => '+62-123-456-789',
+        'email' => 'test@customer.com',
+        'npwp' => '12.345.678.9-123.456',
+        'pic_name' => 'Test PIC',
+        'pic_phone' => '+62-987-654-321',
+    ]);
+    
+    $industrySector = IndustrySector::create([
+        'name' => 'Test Sector',
+        'description' => 'Test Description',
+    ]);
+    
+    $route = Route::create([
+        'code' => 'TEST_ROUTE_4',
+        'name' => 'Test Route',
+        'description' => 'Test Route Description',
+    ]);
+    
+    $vendor = Vendor::create([
+        'company' => 'Test Vendor',
+        'address' => 'Test Address',
+        'city' => 'Test City',
+        'pic' => 'Test PIC',
+        'title_pic' => 'Manager',
+        'phone' => '+62-123-456-789',
+        'moda' => 'Truck',
+        'fleet' => 'Medium',
+        'area_service_coverage' => 'Jakarta, Surabaya',
+    ]);
+    
+    $expedition = Expedition::create([
+        'order_number' => 'EXP-TEST-004',
+        'user_id' => $user->id,
+        'customer_id' => $customer->id,
+        'input_date' => now(),
+        'travel_date' => now()->addDays(2),
+        'origin' => 'Jakarta',
+        'destination' => 'Surabaya',
+        'distance' => 500,
+        'description' => 'Test expedition',
+        'industry_sector_id' => $industrySector->id,
+        'route_id' => $route->id,
+        'detail_route' => 'PP',
+        'expedition_type' => 'vendor',
+        'vendor_id' => $vendor->id,
+        'fleet_id' => null,
+        'driver_id' => null,
+        'eta' => 3,
+    ]);
 
-    public function test_expedition_belongs_to_industry_sector(): void
-    {
-        $industrySector = IndustrySector::factory()->create();
-        $expedition = Expedition::factory()->create(['industry_sector_id' => $industrySector->id]);
+    expect($expedition->industrySector->id)->toBe($industrySector->id);
+});
 
-        $this->assertEquals($industrySector->id, $expedition->industrySector->id);
-    }
+test('vendor can have multiple expeditions', function () {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => Hash::make('password'),
+    ]);
+    
+    $customer = Customer::create([
+        'name' => 'Test Customer',
+        'address' => 'Test Address',
+        'phone' => '+62-123-456-789',
+        'email' => 'test@customer.com',
+        'npwp' => '12.345.678.9-123.456',
+        'pic_name' => 'Test PIC',
+        'pic_phone' => '+62-987-654-321',
+    ]);
+    
+    $industrySector = IndustrySector::create([
+        'name' => 'Test Sector',
+        'description' => 'Test Description',
+    ]);
+    
+    $route = Route::create([
+        'code' => 'TEST_ROUTE_5',
+        'name' => 'Test Route',
+        'description' => 'Test Route Description',
+    ]);
+    
+    $vendor = Vendor::create([
+        'company' => 'Test Vendor',
+        'address' => 'Test Address',
+        'city' => 'Test City',
+        'pic' => 'Test PIC',
+        'title_pic' => 'Manager',
+        'phone' => '+62-123-456-789',
+        'moda' => 'Truck',
+        'fleet' => 'Medium',
+        'area_service_coverage' => 'Jakarta, Surabaya',
+    ]);
+    
+    $expedition = Expedition::create([
+        'order_number' => 'EXP-TEST-005',
+        'user_id' => $user->id,
+        'customer_id' => $customer->id,
+        'input_date' => now(),
+        'travel_date' => now()->addDays(2),
+        'origin' => 'Jakarta',
+        'destination' => 'Surabaya',
+        'distance' => 500,
+        'description' => 'Test expedition',
+        'industry_sector_id' => $industrySector->id,
+        'route_id' => $route->id,
+        'detail_route' => 'PP',
+        'expedition_type' => 'vendor',
+        'vendor_id' => $vendor->id,
+        'fleet_id' => null,
+        'driver_id' => null,
+        'eta' => 3,
+    ]);
 
-    public function test_category_has_many_expeditions(): void
-    {
-        $category = Category::inRandomOrder()->first();
-        $expedition = Expedition::factory()->create(['category_id' => $category->id]);
+    expect($vendor->expeditions)->toHaveCount(1);
+    expect($vendor->expeditions->first()->id)->toBe($expedition->id);
+});
 
-        $this->assertTrue($category->expeditions->contains($expedition));
-        $this->assertEquals(1, $category->expeditions->count());
-    }
+test('expedition belongs to vendor', function () {
+    $user = User::create([
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => Hash::make('password'),
+    ]);
+    
+    $customer = Customer::create([
+        'name' => 'Test Customer',
+        'address' => 'Test Address',
+        'phone' => '+62-123-456-789',
+        'email' => 'test@customer.com',
+        'npwp' => '12.345.678.9-123.456',
+        'pic_name' => 'Test PIC',
+        'pic_phone' => '+62-987-654-321',
+    ]);
+    
+    $industrySector = IndustrySector::create([
+        'name' => 'Test Sector',
+        'description' => 'Test Description',
+    ]);
+    
+    $route = Route::create([
+        'code' => 'TEST_ROUTE_6',
+        'name' => 'Test Route',
+        'description' => 'Test Route Description',
+    ]);
+    
+    $vendor = Vendor::create([
+        'company' => 'Test Vendor',
+        'address' => 'Test Address',
+        'city' => 'Test City',
+        'pic' => 'Test PIC',
+        'title_pic' => 'Manager',
+        'phone' => '+62-123-456-789',
+        'moda' => 'Truck',
+        'fleet' => 'Medium',
+        'area_service_coverage' => 'Jakarta, Surabaya',
+    ]);
+    
+    $expedition = Expedition::create([
+        'order_number' => 'EXP-TEST-006',
+        'user_id' => $user->id,
+        'customer_id' => $customer->id,
+        'input_date' => now(),
+        'travel_date' => now()->addDays(2),
+        'origin' => 'Jakarta',
+        'destination' => 'Surabaya',
+        'distance' => 500,
+        'description' => 'Test expedition',
+        'industry_sector_id' => $industrySector->id,
+        'route_id' => $route->id,
+        'detail_route' => 'PP',
+        'expedition_type' => 'vendor',
+        'vendor_id' => $vendor->id,
+        'fleet_id' => null,
+        'driver_id' => null,
+        'eta' => 3,
+    ]);
 
-    public function test_expedition_belongs_to_category(): void
-    {
-        $category = Category::inRandomOrder()->first();
-        $expedition = Expedition::factory()->create(['category_id' => $category->id]);
-
-        $this->assertEquals($category->id, $expedition->category->id);
-    }
-
-    public function test_vendor_has_many_expeditions(): void
-    {
-        $vendor = Vendor::factory()->create();
-        $expedition = Expedition::factory()->create(['vendor_id' => $vendor->id]);
-
-        $this->assertTrue($vendor->expeditions->contains($expedition));
-        $this->assertEquals(1, $vendor->expeditions->count());
-    }
-
-    public function test_expedition_belongs_to_vendor(): void
-    {
-        $vendor = Vendor::factory()->create();
-        $expedition = Expedition::factory()->create(['vendor_id' => $vendor->id]);
-
-        $this->assertEquals($vendor->id, $expedition->vendor->id);
-    }
-}
+    expect($expedition->vendor->id)->toBe($vendor->id);
+});

@@ -16,7 +16,7 @@ return new class extends Migration
         if (Schema::hasTable('expedition_cost_fleets')) {
             if (!Schema::hasColumn('expedition_cost_fleets', 'total_cost')) {
                 Schema::table('expedition_cost_fleets', function (Blueprint $table) {
-                    $table->integer('total_cost')->nullable()->after('other_cost');
+                    $table->bigInteger('total_cost')->nullable()->after('other_cost');
                 });
             }
         }
@@ -24,7 +24,7 @@ return new class extends Migration
         if (Schema::hasTable('expedition_cost_vendors')) {
             if (!Schema::hasColumn('expedition_cost_vendors', 'total_cost')) {
                 Schema::table('expedition_cost_vendors', function (Blueprint $table) {
-                    $table->integer('total_cost')->nullable()->after('other_cost');
+                    $table->bigInteger('total_cost')->nullable()->after('other_cost');
                 });
             }
         }

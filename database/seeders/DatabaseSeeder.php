@@ -13,14 +13,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
-
         // Use comprehensive transportation seeder
         $this->call([
+            UserSeeder::class,
             RouteSeeder::class,
             IndustrySectorSeeder::class,
             VendorSeeder::class,

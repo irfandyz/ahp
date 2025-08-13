@@ -554,6 +554,9 @@ console.log('Sample expedition:', props.expeditions[0])
 if (props.expeditions[0]) {
   console.log('Sample fleet costs:', props.expeditions[0].fleet_costs)
   console.log('Sample vendor costs:', props.expeditions[0].vendor_costs)
+  console.log('Sample expedition type:', props.expeditions[0].expedition_type)
+  console.log('Sample sales amount from vendor_costs:', props.expeditions[0].vendor_costs?.sales_amount)
+  console.log('Sample sales amount from fleet_costs:', props.expeditions[0].fleet_costs?.sales_amount)
 }
 
 // Configuration modal states
@@ -662,7 +665,24 @@ const getFleetCount = () => {
 }
 
 const getTotalSales = () => {
-  return props.expeditions.reduce((sum: number, expedition: Expedition) => sum + (expedition.sales_amount || 0), 0)
+  const total = props.expeditions.reduce((sum: number, expedition: Expedition) => {
+    let salesAmount = 0
+    
+    if (expedition.expedition_type === 'vendor' && expedition.vendor_costs) {
+      salesAmount = expedition.vendor_costs.sales_amount || 0
+      console.log(`Vendor expedition ${expedition.order_number}: sales_amount = ${salesAmount}`)
+    } else if (expedition.expedition_type === 'fleet' && expedition.fleet_costs) {
+      salesAmount = expedition.fleet_costs.sales_amount || 0
+      console.log(`Fleet expedition ${expedition.order_number}: sales_amount = ${salesAmount}`)
+    } else {
+      console.log(`Expedition ${expedition.order_number}: no cost data available, type = ${expedition.expedition_type}`)
+    }
+    
+    return sum + salesAmount
+  }, 0)
+  
+  console.log('Total sales calculated:', total)
+  return total
 }
 
 // Calculate profit percentage
