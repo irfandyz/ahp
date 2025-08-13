@@ -22,6 +22,22 @@
         </CardHeader>
         <CardContent>
           <form @submit.prevent="submit" class="space-y-6">
+            <!-- Route Code Field -->
+            <div class="space-y-2">
+              <Label for="code" class="text-sm font-medium">Route Code</Label>
+              <Input
+                id="code"
+                v-model="form.code"
+                type="text"
+                placeholder="e.g., LAND, SEA, AIR, IMPORT_SEA"
+                :class="form.errors.code ? 'border-red-500 focus:border-red-500' : ''"
+              />
+              <p v-if="form.errors.code" class="text-sm text-red-600 mt-1">
+                {{ form.errors.code }}
+              </p>
+              <p class="text-sm text-gray-500">Use uppercase letters and underscores (e.g., IMPORT_SEA, EXPORT_AIR)</p>
+            </div>
+
             <!-- Route Name Field -->
             <div class="space-y-2">
               <Label for="name" class="text-sm font-medium">Route Name</Label>
@@ -39,18 +55,18 @@
 
             <!-- Description Field -->
             <div class="space-y-2">
-              <Label for="description" class="text-sm font-medium">Description</Label>
-              <Textarea
-                id="description"
-                v-model="form.description"
-                placeholder="Describe the route and its use cases"
-                :rows="4"
-                :class="form.errors.description ? 'border-red-500 focus:border-red-500' : ''"
-              />
-              <p v-if="form.errors.description" class="text-sm text-red-600 mt-1">
-                {{ form.errors.description }}
-              </p>
-            </div>
+                          <Label for="description" class="text-sm font-medium">Description</Label>
+            <Textarea
+              id="description"
+              v-model="form.description"
+              placeholder="Describe the route and its use cases"
+              :rows="4"
+              :class="form.errors.description ? 'border-red-500 focus:border-red-500' : ''"
+            />
+            <p v-if="form.errors.description" class="text-sm text-red-600 mt-1">
+              {{ form.errors.description }}
+            </p>
+          </div>
 
             <!-- Form Actions -->
             <div class="flex items-center justify-end space-x-3 pt-4 border-t">
@@ -88,6 +104,7 @@ import Textarea from '@/components/ui/textarea/Textarea.vue'
 
 interface Route {
   id: number
+  code: string
   name: string
   description: string
 }
@@ -99,6 +116,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const form = useForm({
+  code: props.route.code,
   name: props.route.name,
   description: props.route.description
 })

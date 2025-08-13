@@ -222,15 +222,15 @@
             </div>
           </div>
           
-          <div v-else-if="expedition.expedition_type === 'fleet' && expedition.fleet_costs" class="space-y-4">
+          <div v-else-if="expedition.expedition_type === 'fleet' && expedition.fleetCosts" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div class="bg-blue-50 p-4 rounded-lg">
                 <label class="block text-sm font-medium text-blue-700">Sales Amount</label>
-                <p class="mt-1 text-lg font-bold text-blue-900">{{ formatCurrency(expedition.fleet_costs.sales_amount || 0) }}</p>
+                <p class="mt-1 text-lg font-bold text-blue-900">{{ formatCurrency(expedition.fleetCosts.sales_amount || 0) }}</p>
               </div>
               <div class="bg-green-50 p-4 rounded-lg">
                 <label class="block text-sm font-medium text-green-700">Total Cost</label>
-                <p class="mt-1 text-lg font-bold text-green-900">{{ formatCurrency(expedition.fleet_costs.total_cost || 0) }}</p>
+                <p class="mt-1 text-lg font-bold text-green-900">{{ formatCurrency(expedition.fleetCosts.total_cost || 0) }}</p>
               </div>
               <div class="bg-purple-50 p-4 rounded-lg">
                 <label class="block text-sm font-medium text-purple-700">Profit</label>
@@ -246,39 +246,39 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700">Transportation Cost</label>
-                <p class="mt-1 text-sm text-gray-900">{{ formatCurrency(expedition.fleet_costs.transportation_cost || 0) }}</p>
+                <p class="mt-1 text-sm text-gray-900">{{ formatCurrency(expedition.fleetCosts.transportation_cost || 0) }}</p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700">Fuel Cost</label>
-                <p class="mt-1 text-sm text-gray-900">{{ formatCurrency(expedition.fleet_costs.fuel_cost || 0) }}</p>
+                <p class="mt-1 text-sm text-gray-900">{{ formatCurrency(expedition.fleetCosts.fuel_cost || 0) }}</p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700">Tolling Cost</label>
-                <p class="mt-1 text-sm text-gray-900">{{ formatCurrency(expedition.fleet_costs.tolling_cost || 0) }}</p>
+                <p class="mt-1 text-sm text-gray-900">{{ formatCurrency(expedition.fleetCosts.tolling_cost || 0) }}</p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700">Port Cost</label>
-                <p class="mt-1 text-sm text-gray-900">{{ formatCurrency(expedition.fleet_costs.port_cost || 0) }}</p>
+                <p class="mt-1 text-sm text-gray-900">{{ formatCurrency(expedition.fleetCosts.port_cost || 0) }}</p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700">Insurance Cost</label>
-                <p class="mt-1 text-sm text-gray-900">{{ formatCurrency(expedition.fleet_costs.insurance_cost || 0) }}</p>
+                <p class="mt-1 text-sm text-gray-900">{{ formatCurrency(expedition.fleetCosts.insurance_cost || 0) }}</p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700">Driver Cost</label>
-                <p class="mt-1 text-sm text-gray-900">{{ formatCurrency(expedition.fleet_costs.driver_cost || 0) }}</p>
+                <p class="mt-1 text-sm text-gray-900">{{ formatCurrency(expedition.fleetCosts.driver_cost || 0) }}</p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700">Deposit Cost</label>
-                <p class="mt-1 text-sm text-gray-900">{{ formatCurrency(expedition.fleet_costs.deposit_cost || 0) }}</p>
+                <p class="mt-1 text-sm text-gray-900">{{ formatCurrency(expedition.fleetCosts.deposit_cost || 0) }}</p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700">Other Cost</label>
-                <p class="mt-1 text-sm text-gray-900">{{ formatCurrency(expedition.fleet_costs.other_cost || 0) }}</p>
+                <p class="mt-1 text-sm text-gray-900">{{ formatCurrency(expedition.fleetCosts.other_cost || 0) }}</p>
               </div>
-              <div v-if="expedition.fleet_costs.deposit_date">
+              <div v-if="expedition.fleetCosts.deposit_date">
                 <label class="block text-sm font-medium text-gray-700">Deposit Date</label>
-                <p class="mt-1 text-sm text-gray-900">{{ formatDate(expedition.fleet_costs.deposit_date) }}</p>
+                <p class="mt-1 text-sm text-gray-900">{{ formatDate(expedition.fleetCosts.deposit_date) }}</p>
               </div>
             </div>
           </div>
@@ -437,8 +437,8 @@ interface Expedition {
   fleet?: Fleet
   driver?: Driver
   // Cost relationships
-  fleet_costs?: ExpeditionCostFleet
-  vendor_costs?: ExpeditionCostVendor
+  fleetCosts?: ExpeditionCostFleet
+  vendorCosts?: ExpeditionCostVendor
   // Accessor methods from the Expedition model
   sales_amount?: number
   total_cost?: number
@@ -480,10 +480,10 @@ const formatCurrency = (amount: number) => {
 
 const getSalesAmount = (expedition: Expedition) => {
   // Try to get sales amount from cost relationships first, then fallback to expedition
-  if (expedition.expedition_type === 'vendor' && expedition.vendor_costs?.sales_amount) {
-    return expedition.vendor_costs.sales_amount
-  } else if (expedition.expedition_type === 'fleet' && expedition.fleet_costs?.sales_amount) {
-    return expedition.fleet_costs.sales_amount
+  if (expedition.expedition_type === 'vendor' && expedition.vendorCosts?.sales_amount) {
+    return expedition.vendorCosts.sales_amount
+  } else if (expedition.expedition_type === 'fleet' && expedition.fleetCosts?.sales_amount) {
+    return expedition.fleetCosts.sales_amount
   }
   // Fallback to expedition sales_amount
   return expedition.sales_amount || 0
@@ -502,7 +502,7 @@ const getTotalCost = (expedition: Expedition) => {
 const calculateVendorTotalCost = (expedition: Expedition) => {
   if (expedition.expedition_type !== 'vendor') return 0
   
-  const vendorCosts = expedition.vendor_costs
+  const vendorCosts = expedition.vendorCosts
   if (vendorCosts) {
     const vendorCost = parseFloat(vendorCosts.vendor_cost?.toString() || '0')
     const depositCost = parseFloat(vendorCosts.deposit_cost?.toString() || '0')
@@ -519,7 +519,7 @@ const calculateVendorTotalCost = (expedition: Expedition) => {
 const calculateFleetTotalCost = (expedition: Expedition) => {
   if (expedition.expedition_type !== 'fleet') return 0
   
-  const fleetCosts = expedition.fleet_costs
+  const fleetCosts = expedition.fleetCosts
   if (fleetCosts) {
     const transportationCost = parseFloat(fleetCosts.transportation_cost?.toString() || '0')
     const fuelCost = parseFloat(fleetCosts.fuel_cost?.toString() || '0')

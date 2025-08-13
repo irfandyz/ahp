@@ -37,11 +37,15 @@ class RouteController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'code' => 'required|string|max:50|unique:routes|regex:/^[A-Z_]+$/',
             'name' => 'required|string|max:255|unique:routes',
             'description' => 'required|string|max:500',
+        ], [
+            'code.regex' => 'Code must contain only uppercase letters and underscores.',
         ]);
 
         Route::create([
+            'code' => $request->code,
             'name' => $request->name,
             'description' => $request->description,
         ]);
@@ -66,11 +70,15 @@ class RouteController extends Controller
     public function update(Request $request, Route $route)
     {
         $request->validate([
+            'code' => 'required|string|max:50|unique:routes,code,' . $route->id . '|regex:/^[A-Z_]+$/',
             'name' => 'required|string|max:255|unique:routes,name,' . $route->id,
             'description' => 'required|string|max:500',
+        ], [
+            'code.regex' => 'Code must contain only uppercase letters and underscores.',
         ]);
 
         $route->update([
+            'code' => $request->code,
             'name' => $request->name,
             'description' => $request->description,
         ]);

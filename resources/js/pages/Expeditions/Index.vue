@@ -1,11 +1,10 @@
 <template>
   <AppLayout title="All Expeditions">
-    
     <div class="space-y-6 p-5">
       <!-- Header -->
       <div class="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <div>
-          <h1 class="text-2xl font-bold">All Expeditions</h1>
+          <h1 class="text-2xl font-bold text-gray-900">All Expeditions</h1>
           <p class="text-muted-foreground">View and manage all transportation expeditions</p>
         </div>
         <div class="flex items-center space-x-3">
@@ -32,7 +31,7 @@
 
       <!-- Summary Cards -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white rounded-lg border border-gray-200 p-4">
+        <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow">
           <div class="flex items-center">
             <div class="p-2 bg-blue-100 rounded-lg">
               <Icon name="truck" class="h-6 w-6 text-blue-600" />
@@ -44,7 +43,7 @@
           </div>
         </div>
         
-        <div class="bg-white rounded-lg border border-gray-200 p-4">
+        <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow">
           <div class="flex items-center">
             <div class="p-2 bg-green-100 rounded-lg">
               <Icon name="building" class="h-6 w-6 text-green-600" />
@@ -56,7 +55,7 @@
           </div>
         </div>
         
-        <div class="bg-white rounded-lg border border-gray-200 p-4">
+        <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow">
           <div class="flex items-center">
             <div class="p-2 bg-purple-100 rounded-lg">
               <Icon name="car" class="h-6 w-6 text-purple-600" />
@@ -68,7 +67,7 @@
           </div>
         </div>
         
-        <div class="bg-white rounded-lg border border-gray-200 p-4">
+        <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow">
           <div class="flex items-center">
             <div class="p-2 bg-yellow-100 rounded-lg">
               <Icon name="trending-up" class="h-6 w-6 text-yellow-600" />
@@ -82,58 +81,51 @@
       </div>
 
       <!-- Search and Filters -->
-      <div class="mb-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div class="flex-1 max-w-md">
+      <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          <!-- Search -->
+          <div class="lg:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Search Expeditions</label>
           <div class="relative">
             <Icon name="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               v-model="searchQuery"
               type="text"
-              placeholder="Search expeditions..."
-              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Search by order number, origin, destination..."
+                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
           </div>
         </div>
         
-        <div class="flex items-center space-x-2">
           <!-- Expedition Type Filter -->
-          <div class="flex items-center space-x-1 border border-gray-300 rounded-md">
-            <button
-              @click="filterType = ''"
-              :class="[
-                'px-3 py-2 text-sm font-medium rounded-l-md transition-colors',
-                filterType === '' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
-              ]"
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Expedition Type</label>
+            <select
+              v-model="filterType"
+              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             >
-              All
-            </button>
-            <button
-              @click="filterType = 'vendor'"
-              :class="[
-                'px-3 py-2 text-sm font-medium transition-colors',
-                filterType === 'vendor' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
-              ]"
-            >
-              Vendor
-            </button>
-            <button
-              @click="filterType = 'fleet'"
-              :class="[
-                'px-3 py-2 text-sm font-medium rounded-r-md transition-colors',
-                filterType === 'fleet' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
-              ]"
-            >
-              Fleet
-            </button>
+              <option value="">All Types</option>
+              <option value="vendor">Vendor</option>
+              <option value="fleet">Fleet</option>
+            </select>
           </div>
           
-          <Button as-child>
+          <!-- Month/Year Filter -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Travel Date</label>
+            <input
+              v-model="filterDate"
+              type="month"
+              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            />
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center mt-4">
+          <div class="text-sm text-gray-600">
+            Showing {{ paginatedExpeditions.length }} of {{ filteredExpeditions.length }} expeditions
+          </div>
+          <Button as-child class="bg-blue-600 hover:bg-blue-700 text-white">
             <Link :href="route('expeditions.create')">
               <Icon name="plus" class="h-4 w-4 mr-2" />
               New Expedition
@@ -143,127 +135,138 @@
       </div>
 
       <!-- Expeditions Table -->
-      <Card>
-        <CardHeader>
-          <div>
-            <CardTitle>Expeditions List</CardTitle>
-            <CardDescription>
-              View and manage all transportation expeditions
-            </CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent>
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead>
-                <tr class="border-b">
-                  <th class="text-left font-medium p-2">Order #</th>
-                  <th class="text-left font-medium p-2">Type</th>
-                  <th class="text-left font-medium p-2">Input Date</th>
-                  <th class="text-left font-medium p-2">Travel Date</th>
-                  <th class="text-left font-medium p-2">ETA (Days)</th>
-                  <th class="text-left font-medium p-2">Origin</th>
-                  <th class="text-left font-medium p-2">Destination</th>
-                  <th class="text-left font-medium p-2">Industry Sector</th>
-                  <th class="text-left font-medium p-2">Route</th>
-                  <th class="text-left font-medium p-2">Vendor/Fleet</th>
-                  <th class="text-left font-medium p-2">Sales</th>
-                  <th class="text-left font-medium p-2">Cost</th>
-                  <th class="text-left font-medium p-2">Profit</th>
-                  <th class="text-left font-medium p-2">Actions</th>
+          <table class="w-full">
+            <thead class="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th class="text-left font-semibold text-gray-700 p-4">Order #</th>
+                <th class="text-left font-semibold text-gray-700 p-4">Type</th>
+                <th class="text-left font-semibold text-gray-700 p-4">Travel Date</th>
+                <th class="text-left font-semibold text-gray-700 p-4">Route</th>
+                <th class="text-left font-semibold text-gray-700 p-4">Sales</th>
+                <th class="text-left font-semibold text-gray-700 p-4">Cost</th>
+                <th class="text-left font-semibold text-gray-700 p-4">Profit</th>
+                <th class="text-left font-semibold text-gray-700 p-4">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="expedition in filteredExpeditions" :key="expedition.id" class="border-b hover:bg-gray-50">
-                  <td class="p-2 font-medium">{{ expedition.order_number }}</td>
-                  <td class="p-2">
-                    <Badge :variant="expedition.expedition_type === 'fleet' ? 'default' : 'secondary'">
+              <tr 
+                v-for="expedition in paginatedExpeditions" 
+                :key="expedition.id" 
+                class="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                :class="expedition.expedition_type === 'vendor' ? 'bg-orange-50/30' : 'bg-blue-50/30'"
+              >
+                <td class="p-4">
+                  <div class="font-semibold text-gray-900">{{ expedition.order_number }}</div>
+                  <div class="text-sm text-gray-500">{{ expedition.origin }} → {{ expedition.destination }}</div>
+                </td>
+                <td class="p-4">
+                  <Badge 
+                    :variant="expedition.expedition_type === 'fleet' ? 'default' : 'secondary'"
+                    :class="expedition.expedition_type === 'vendor' ? 'bg-orange-100 text-orange-800 border-orange-200' : 'bg-blue-100 text-blue-800 border-blue-200'"
+                  >
                       {{ expedition.expedition_type === 'fleet' ? 'Own Fleet' : 'Vendor' }}
                     </Badge>
                   </td>
-                  <td class="p-2 text-gray-600">{{ formatDate(expedition.input_date) }}</td>
-                  <td class="p-2 text-gray-600">{{ formatDate(expedition.travel_date) }}</td>
-                  <td class="p-2 text-gray-600">{{ expedition.eta }} days</td>
-                  <td class="p-2 text-gray-600">{{ expedition.origin }}</td>
-                  <td class="p-2 text-gray-600">{{ expedition.destination }}</td>
-                  <td class="p-2 text-gray-600">{{ expedition.industry_sector?.name || '-' }}</td>
-                  <td class="p-2 text-gray-600">{{ expedition.route?.name || '-' }}</td>
-                  <td class="p-2 text-gray-600">
-                    <div v-if="expedition.expedition_type === 'vendor'">
-                      {{ expedition.vendor?.company || '-' }}
-                    </div>
-                    <div v-else-if="expedition.expedition_type === 'fleet'">
-                      {{ expedition.fleet?.plate_number || '-' }}
-                      <div v-if="expedition.fleet?.fleet_type" class="text-xs text-gray-500">
-                        {{ expedition.fleet.fleet_type.name }}
-                      </div>
-                    </div>
-                    <div v-else>-</div>
+                <td class="p-4">
+                  <div class="text-gray-900">{{ formatDate(expedition.travel_date) }}</div>
+                  <div class="text-sm text-gray-500">{{ expedition.eta }} days ETA</div>
+                </td>
+                <td class="p-4">
+                  <div class="text-gray-900">{{ expedition.route?.name || '-' }}</div>
+                  <div class="text-sm text-gray-500">{{ expedition.industry_sector?.name || '-' }}</div>
                   </td>
-                  <td class="p-2 text-gray-600">
-                                          <div v-if="expedition.expedition_type === 'vendor'">
-                        {{ formatCurrency(expedition.vendor_costs?.sales_amount || 0) }}
+                <td class="p-4">
+                  <div class="text-gray-900 font-medium">
+                    {{ formatCurrency(getSalesAmount(expedition)) }}
                       </div>
-                      <div v-else-if="expedition.expedition_type === 'fleet'">
-                        {{ formatCurrency(expedition.fleet_costs?.sales_amount || 0) }}
-                      </div>
-                    <div v-else>-</div>
                   </td>
-                  <td class="p-2 text-gray-600">
-                    <div v-if="expedition.expedition_type === 'vendor'">
-                      {{ formatCurrency(expedition.vendor_costs?.total_cost || 0) }}
+                <td class="p-4">
+                  <div class="text-gray-900 font-medium">
+                    {{ formatCurrency(getTotalCost(expedition)) }}
                     </div>
-                    <div v-else-if="expedition.expedition_type === 'fleet'">
-                      {{ formatCurrency(expedition.fleet_costs?.total_cost || 0) }}
-                    </div>
-                    <div v-else>-</div>
                   </td>
-                  <td class="p-2">
+                <td class="p-4">
+                  <div class="flex items-center space-x-2">
                     <span :class="[
-                      'font-medium',
+                      'font-semibold',
                       getSalesAmount(expedition) - getTotalCost(expedition) >= 0 ? 'text-green-600' : 'text-red-600'
                     ]">
                       {{ formatCurrency(getSalesAmount(expedition) - getTotalCost(expedition)) }}
-                      <span class="text-sm ml-1">
-                        ({{ getProfitPercentage(expedition) }})
                       </span>
+                    <span :class="[
+                      'text-sm px-2 py-1 rounded-full',
+                      getSalesAmount(expedition) - getTotalCost(expedition) >= 0 
+                        ? 'bg-green-100 text-green-700' 
+                        : 'bg-red-100 text-red-700'
+                    ]">
+                      {{ getProfitPercentage(expedition) }}
                     </span>
+                  </div>
                   </td>
-                  <td class="p-2">
-                    <div class="flex items-center space-x-2">
-                      <Button variant="outline" size="sm" as-child>
-                        <Link :href="route('expeditions.show', expedition.id)">
-                          <Icon name="eye" class="h-4 w-4" />
-                        </Link>
-                      </Button>
-                      <Button variant="outline" size="sm" as-child>
-                        <Link :href="route('expeditions.edit', expedition.id)">
-                          <Icon name="edit" class="h-4 w-4" />
-                        </Link>
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        @click="deleteExpedition(expedition)"
-                        class="text-red-600 hover:text-red-700"
-                      >
-                        <Icon name="trash" class="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-                <tr v-if="filteredExpeditions.length === 0">
-                  <td colspan="14" class="p-8 text-center text-gray-500">
-                    No expeditions found. Create your first expedition to get started.
+                <td class="p-4">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger as-child>
+                        <Button variant="outline" size="sm" class="hover:bg-gray-50" aria-label="Actions">
+                          <Icon name="moreVertical" class="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" class="w-48 z-[60]">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuGroup>
+                          <DropdownMenuItem as-child>
+                            <Link :href="route('expeditions.show', expedition.id)" class="flex items-center">
+                              <Icon name="eye" class="mr-2 h-4 w-4" /> View
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem as-child>
+                            <Link :href="route('expeditions.edit', expedition.id)" class="flex items-center">
+                              <Icon name="edit" class="mr-2 h-4 w-4" /> Edit
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuLabel>Print Options</DropdownMenuLabel>
+                          <DropdownMenuItem @click="printSuratJalan(expedition)">
+                            <Icon name="fileText" class="mr-2 h-4 w-4" /> Surat Jalan
+                          </DropdownMenuItem>
+                          <DropdownMenuItem @click="printQuotation(expedition)">
+                            <Icon name="receipt" class="mr-2 h-4 w-4" /> Quotation
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem @click="deleteExpedition(expedition)" class="text-red-600 focus:text-red-700">
+                            <Icon name="trash" class="mr-2 h-4 w-4" /> Delete
+                            <DropdownMenuShortcut>Del</DropdownMenuShortcut>
+                          </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                </td>
+              </tr>
+              <tr v-if="paginatedExpeditions.length === 0">
+                <td colspan="8" class="p-8 text-center text-gray-500">
+                  <Icon name="search" class="h-12 w-12 mx-auto text-gray-300 mb-4" />
+                  <p class="text-lg font-medium">No expeditions found</p>
+                  <p class="text-sm">Try adjusting your search criteria or create your first expedition.</p>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-
-        </CardContent>
-      </Card>
+        <!-- Load More Button -->
+        <div v-if="hasMoreExpeditions" class="p-4 border-t border-gray-200 text-center">
+          <Button 
+            @click="loadMore" 
+            variant="outline" 
+            :disabled="isLoadingMore"
+            class="hover:bg-gray-50"
+          >
+            <Icon v-if="isLoadingMore" name="loader" class="mr-2 h-4 w-4 animate-spin" />
+            {{ isLoadingMore ? 'Loading...' : 'Load More Expeditions' }}
+          </Button>
+        </div>
+      </div>
     </div>
 
     <!-- Cost Configuration Modal -->
@@ -283,7 +286,6 @@
         </div>
         
         <div class="p-6">
-        
         <div class="space-y-6">
           <!-- Fuel Cost Configuration -->
           <div class="border border-gray-200 rounded-lg p-4 bg-gray-50/30">
@@ -430,16 +432,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { router, Link } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 import Icon from '@/components/Icon.vue'
 import Button from '@/components/ui/button/Button.vue'
-import Card from '@/components/ui/card/Card.vue'
-import CardContent from '@/components/ui/card/CardContent.vue'
-import CardDescription from '@/components/ui/card/CardDescription.vue'
-import CardHeader from '@/components/ui/card/CardHeader.vue'
-import CardTitle from '@/components/ui/card/CardTitle.vue'
 import Dialog from '@/components/ui/dialog/Dialog.vue'
 import DialogContent from '@/components/ui/dialog/DialogContent.vue'
 import DialogDescription from '@/components/ui/dialog/DialogDescription.vue'
@@ -447,6 +444,7 @@ import DialogFooter from '@/components/ui/dialog/DialogFooter.vue'
 import DialogHeader from '@/components/ui/dialog/DialogHeader.vue'
 import DialogTitle from '@/components/ui/dialog/DialogTitle.vue'
 import Badge from '@/components/ui/badge/Badge.vue'
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuGroup, DropdownMenuSeparator, DropdownMenuShortcut } from '@/components/ui/dropdown-menu'
 
 interface IndustrySector {
   id: number
@@ -548,17 +546,6 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Debug: Log data yang diterima
-console.log('Expeditions data received:', props.expeditions)
-console.log('Sample expedition:', props.expeditions[0])
-if (props.expeditions[0]) {
-  console.log('Sample fleet costs:', props.expeditions[0].fleet_costs)
-  console.log('Sample vendor costs:', props.expeditions[0].vendor_costs)
-  console.log('Sample expedition type:', props.expeditions[0].expedition_type)
-  console.log('Sample sales amount from vendor_costs:', props.expeditions[0].vendor_costs?.sales_amount)
-  console.log('Sample sales amount from fleet_costs:', props.expeditions[0].fleet_costs?.sales_amount)
-}
-
 // Configuration modal states
 const showConfigModal = ref(false)
 const isSavingConfig = ref(false)
@@ -575,35 +562,98 @@ const showDeleteDialog = ref(false)
 const expeditionToDelete = ref<Expedition | null>(null)
 const isDeleting = ref(false)
 const searchQuery = ref('')
-
 const filterType = ref('')
+const filterDate = ref('')
+
+// Pagination states
+const currentPage = ref(1)
+const itemsPerPage = 10
+const isLoadingMore = ref(false)
 
 const filteredExpeditions = computed(() => {
-  if (!searchQuery.value && filterType.value === '') return props.expeditions
+  let filtered = props.expeditions
   
+  // Search filter
+  if (searchQuery.value) {
   const query = searchQuery.value.toLowerCase()
-  return props.expeditions.filter((expedition: Expedition) => {
-    const matchesQuery = expedition.order_number.toLowerCase().includes(query) ||
+    filtered = filtered.filter((expedition: Expedition) => {
+      return expedition.order_number.toLowerCase().includes(query) ||
                          expedition.origin.toLowerCase().includes(query) ||
                          expedition.destination.toLowerCase().includes(query) ||
                          expedition.industry_sector?.name.toLowerCase().includes(query) ||
                          expedition.route?.name.toLowerCase().includes(query) ||
                          expedition.vendor?.company.toLowerCase().includes(query) ||
                          expedition.fleet?.plate_number.toLowerCase().includes(query)
+    })
+  }
 
-    const matchesFilter = filterType.value === '' ||
-                          (filterType.value === 'vendor' && expedition.expedition_type === 'vendor') ||
-                          (filterType.value === 'fleet' && expedition.expedition_type === 'fleet')
+  // Type filter
+  if (filterType.value) {
+    filtered = filtered.filter((expedition: Expedition) => 
+      expedition.expedition_type === filterType.value
+    )
+  }
 
-    return matchesQuery && matchesFilter
-  })
+  // Date filter
+  if (filterDate.value) {
+    filtered = filtered.filter((expedition: Expedition) => {
+      const travelDate = new Date(expedition.travel_date)
+      const filterYear = parseInt(filterDate.value.split('-')[0])
+      const filterMonth = parseInt(filterDate.value.split('-')[1]) - 1
+      return travelDate.getFullYear() === filterYear && travelDate.getMonth() === filterMonth
+    })
+  }
+
+  return filtered
 })
 
+const paginatedExpeditions = computed(() => {
+  const startIndex = 0
+  const endIndex = currentPage.value * itemsPerPage
+  return filteredExpeditions.value.slice(startIndex, endIndex)
+})
 
+const hasMoreExpeditions = computed(() => {
+  return paginatedExpeditions.value.length < filteredExpeditions.value.length
+})
+
+const loadMore = () => {
+  if (hasMoreExpeditions.value && !isLoadingMore.value) {
+    isLoadingMore.value = true
+    setTimeout(() => {
+      currentPage.value++
+      isLoadingMore.value = false
+    }, 500)
+  }
+}
+
+// Reset pagination when filters change
+const resetPagination = () => {
+  currentPage.value = 1
+}
+
+// Watch for filter changes
+watch([searchQuery, filterType, filterDate], () => {
+  resetPagination()
+})
 
 const deleteExpedition = (expedition: Expedition) => {
   expeditionToDelete.value = expedition
   showDeleteDialog.value = true
+}
+
+const printSuratJalan = (expedition: Expedition) => {
+  // TODO: Implement Surat Jalan printing
+  console.log('Printing Surat Jalan for expedition:', expedition.order_number)
+  // You can add your printing logic here
+  // For example: window.open(`/expeditions/${expedition.id}/surat-jalan`, '_blank')
+}
+
+const printQuotation = (expedition: Expedition) => {
+  // TODO: Implement Quotation printing
+  console.log('Printing Quotation for expedition:', expedition.order_number)
+  // You can add your printing logic here
+  // For example: window.open(`/expeditions/${expedition.id}/quotation`, '_blank')
 }
 
 const confirmDelete = () => {
@@ -628,12 +678,14 @@ const formatDate = (dateString: string) => {
 }
 
 const formatCurrency = (amount: number) => {
+  // Remove minus sign from currency format, keep only the number
+  const absoluteAmount = Math.abs(amount)
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0
-  }).format(amount)
+  }).format(absoluteAmount)
 }
 
 const getSalesAmount = (expedition: Expedition) => {
@@ -670,18 +722,13 @@ const getTotalSales = () => {
     
     if (expedition.expedition_type === 'vendor' && expedition.vendor_costs) {
       salesAmount = expedition.vendor_costs.sales_amount || 0
-      console.log(`Vendor expedition ${expedition.order_number}: sales_amount = ${salesAmount}`)
     } else if (expedition.expedition_type === 'fleet' && expedition.fleet_costs) {
       salesAmount = expedition.fleet_costs.sales_amount || 0
-      console.log(`Fleet expedition ${expedition.order_number}: sales_amount = ${salesAmount}`)
-    } else {
-      console.log(`Expedition ${expedition.order_number}: no cost data available, type = ${expedition.expedition_type}`)
     }
     
     return sum + salesAmount
   }, 0)
   
-  console.log('Total sales calculated:', total)
   return total
 }
 
@@ -706,21 +753,16 @@ const getProfitPercentage = (expedition: Expedition) => {
 const calculateVendorTotalCost = (expedition: Expedition) => {
   if (expedition.expedition_type !== 'vendor') return 0
   
-  const vendorCosts = expedition.vendor_costs
-  if (vendorCosts) {
-    const vendorCost = parseFloat(vendorCosts.vendor_cost?.toString() || '0')
-    const depositCost = parseFloat(vendorCosts.deposit_cost?.toString() || '0')
-    const otherCost = parseFloat(vendorCosts.other_cost?.toString() || '0')
+  const vendor_costs = expedition.vendor_costs
+  if (vendor_costs) {
+    const vendorCost = parseFloat(vendor_costs.vendor_cost?.toString() || '0')
+    const depositCost = parseFloat(vendor_costs.deposit_cost?.toString() || '0')
+    const otherCost = parseFloat(vendor_costs.other_cost?.toString() || '0')
     const total = vendorCost + depositCost + otherCost
-    
-    // Debug logging
-    console.log('Vendor costs:', { vendorCost, depositCost, otherCost, total })
     
     return total
   }
   
-  // Fallback to expedition total_cost if vendorCosts not available
-  console.log('Vendor costs not available, using fallback:', expedition.total_cost)
   return expedition.total_cost || 0
 }
 
@@ -728,26 +770,21 @@ const calculateVendorTotalCost = (expedition: Expedition) => {
 const calculateFleetTotalCost = (expedition: Expedition) => {
   if (expedition.expedition_type !== 'fleet') return 0
   
-  const fleetCosts = expedition.fleet_costs
-  if (fleetCosts) {
-    const transportationCost = parseFloat(fleetCosts.transportation_cost?.toString() || '0')
-    const fuelCost = parseFloat(fleetCosts.fuel_cost?.toString() || '0')
-    const tollingCost = parseFloat(fleetCosts.tolling_cost?.toString() || '0')
-    const portCost = parseFloat(fleetCosts.port_cost?.toString() || '0')
-    const insuranceCost = parseFloat(fleetCosts.insurance_cost?.toString() || '0')
-    const driverCost = parseFloat(fleetCosts.driver_cost?.toString() || '0')
-    const depositCost = parseFloat(fleetCosts.deposit_cost?.toString() || '0')
-    const otherCost = parseFloat(fleetCosts.other_cost?.toString() || '0')
+  const fleet_costs = expedition.fleet_costs
+  if (fleet_costs) {
+    const transportationCost = parseFloat(fleet_costs.transportation_cost?.toString() || '0')
+    const fuelCost = parseFloat(fleet_costs.fuel_cost?.toString() || '0')
+    const tollingCost = parseFloat(fleet_costs.tolling_cost?.toString() || '0')
+    const portCost = parseFloat(fleet_costs.port_cost?.toString() || '0')
+    const insuranceCost = parseFloat(fleet_costs.insurance_cost?.toString() || '0')
+    const driverCost = parseFloat(fleet_costs.driver_cost?.toString() || '0')
+    const depositCost = parseFloat(fleet_costs.deposit_cost?.toString() || '0')
+    const otherCost = parseFloat(fleet_costs.other_cost?.toString() || '0')
     const total = transportationCost + fuelCost + tollingCost + portCost + insuranceCost + driverCost + depositCost + otherCost
-    
-    // Debug logging
-    console.log('Fleet costs:', { transportationCost, fuelCost, tollingCost, portCost, insuranceCost, driverCost, depositCost, otherCost, total })
     
     return total
   }
   
-  // Fallback to expedition total_cost if fleetCosts not available
-  console.log('Fleet costs not available, using fallback:', expedition.total_cost)
   return expedition.total_cost || 0
 }
 
@@ -778,8 +815,19 @@ const loadConfiguration = () => {
   }
 }
 
+// Set current month as default filter
+const setDefaultDateFilter = () => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  filterDate.value = `${year}-${month}`
+}
+
 // Load configuration when component mounts
+onMounted(() => {
 loadConfiguration()
+  setDefaultDateFilter()
+})
 </script>
 
 <style scoped>
@@ -788,7 +836,7 @@ table {
 }
 
 th, td {
-  padding: 0.5rem;
+  padding: 1rem;
   text-align: left;
   vertical-align: top;
 }

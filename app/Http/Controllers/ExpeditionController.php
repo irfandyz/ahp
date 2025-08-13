@@ -31,23 +31,11 @@ class ExpeditionController extends Controller
             'vendor:id,company',
             'fleet.fleetType:id,name',
             'driver:id,name',
-            'fleet_costs',
-            'vendor_costs'
+            'fleetCosts',
+            'vendorCosts'
         ])
         ->orderBy('created_at', 'desc')->get();
         
-        // Debug: Log data yang dikirim
-        \Log::info('Expeditions data:', [
-            'count' => $expeditions->count(),
-            'sample' => $expeditions->first() ? [
-                'id' => $expeditions->first()->id,
-                'type' => $expeditions->first()->expedition_type,
-                'has_fleet_costs' => $expeditions->first()->fleet_costs ? 'yes' : 'no',
-                'has_vendor_costs' => $expeditions->first()->vendor_costs ? 'yes' : 'no',
-                'fleet_costs_data' => $expeditions->first()->fleet_costs,
-                'vendor_costs_data' => $expeditions->first()->vendor_costs,
-            ] : 'no data'
-        ]);
         
         return Inertia::render('Expeditions/Index', [
             'expeditions' => $expeditions,
@@ -221,8 +209,8 @@ class ExpeditionController extends Controller
             'vendor:id,company,address,city,pic,title_pic,phone,moda,fleet,area_service_coverage',
             'fleet.driver:id,name,phone,email,address',
             'fleet.fleetType:id,name,description',
-            'fleet_costs',
-            'vendor_costs'
+            'fleetCosts',
+            'vendorCosts'
         ]);
 
         return Inertia::render('Expeditions/Show', [
@@ -236,8 +224,8 @@ class ExpeditionController extends Controller
     public function edit(Expedition $expedition): Response
     {
         $expedition->load([
-            'fleet_costs',
-            'vendor_costs'
+            'fleetCosts',
+            'vendorCosts'
         ]);
 
         $industrySectors = IndustrySector::orderBy('name')->get(['id', 'name', 'description']);
@@ -316,7 +304,7 @@ class ExpeditionController extends Controller
         // Update or create cost records based on expedition type
         if ($expedition->expedition_type === 'fleet') {
             // Update or create fleet cost record
-            $expedition->fleet_costs()->updateOrCreate(
+            $expedition->fleetCosts()->updateOrCreate(
                 ['expedition_id' => $expedition->id],
                 [
                     'sales_amount' => $validated['sales_amount'] ?? null,
@@ -334,10 +322,10 @@ class ExpeditionController extends Controller
             );
 
             // Delete vendor cost record if it exists
-            $expedition->vendor_costs()->delete();
+            $expedition->vendorCosts()->delete();
         } elseif ($expedition->expedition_type === 'vendor') {
             // Update or create vendor cost record
-            $expedition->vendor_costs()->updateOrCreate(
+            $expedition->vendorCosts()->updateOrCreate(
                 ['expedition_id' => $expedition->id],
                 [
                     'sales_amount' => $validated['sales_amount'] ?? null,
@@ -350,7 +338,7 @@ class ExpeditionController extends Controller
             );
 
             // Delete fleet cost record if it exists
-            $expedition->fleet_costs()->delete();
+            $expedition->fleetCosts()->delete();
         }
 
         return redirect()->route('expeditions.index')
@@ -363,8 +351,8 @@ class ExpeditionController extends Controller
     public function destroy(Expedition $expedition)
     {
         // Delete associated cost records first
-        $expedition->fleet_costs()->delete();
-        $expedition->vendor_costs()->delete();
+        $expedition->fleetCosts()->delete();
+        $expedition->vendorCosts()->delete();
         
         // Delete the expedition
         $expedition->delete();

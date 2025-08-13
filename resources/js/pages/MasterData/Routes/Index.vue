@@ -51,6 +51,7 @@
             <table class="w-full text-sm">
               <thead>
                 <tr class="border-b">
+                  <th class="text-left font-medium p-2">Code</th>
                   <th class="text-left font-medium p-2">Name</th>
                   <th class="text-left font-medium p-2">Description</th>
                   <th class="text-left font-medium p-2">Created</th>
@@ -59,6 +60,7 @@
               </thead>
               <tbody>
                 <tr v-for="routeItem in filteredRoutes" :key="routeItem.id" class="border-b hover:bg-gray-50">
+                  <td class="p-2 font-mono text-sm bg-gray-100 rounded px-2 py-1">{{ routeItem.code }}</td>
                   <td class="p-2 font-medium">{{ routeItem.name }}</td>
                   <td class="p-2 text-gray-600">{{ routeItem.description }}</td>
                   <td class="p-2 text-gray-500">{{ formatDate(routeItem.created_at) }}</td>
@@ -82,7 +84,7 @@
                   </td>
                 </tr>
                 <tr v-if="filteredRoutes.length === 0">
-                  <td colspan="4" class="p-8 text-center text-gray-500">
+                  <td colspan="5" class="p-8 text-center text-gray-500">
                     No routes found. Create your first route to get started.
                   </td>
                 </tr>
@@ -244,6 +246,7 @@ interface Route {
   description: string
   created_at: string
   updated_at: string
+  code: string
 }
 
 interface Props {
@@ -268,6 +271,7 @@ const filteredRoutes = computed(() => {
   if (!searchQuery.value) return props.routes.data
   
   return props.routes.data.filter(route =>
+    route.code.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
     route.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
     route.description.toLowerCase().includes(searchQuery.value.toLowerCase())
   )

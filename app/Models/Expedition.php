@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Expedition extends Model
 {
@@ -96,16 +96,24 @@ class Expedition extends Model
     /**
      * Get the vendor costs for this expedition.
      */
-    public function vendorCosts(): HasMany
+    public function vendorCosts(): HasOne
     {
-        return $this->hasMany(ExpeditionCostVendor::class);
+        return $this->hasOne(ExpeditionCostVendor::class);
     }
 
     /**
      * Get the fleet costs for this expedition.
      */
-    public function fleetCosts(): HasMany
+    public function fleetCosts(): HasOne
     {
-        return $this->hasMany(ExpeditionCostFleet::class);
+        return $this->hasOne(ExpeditionCostFleet::class);
+    }
+
+    /**
+     * Get the route that owns the expedition.
+     */
+    public function route(): BelongsTo
+    {
+        return $this->belongsTo(Route::class);
     }
 }

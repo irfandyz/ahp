@@ -45,12 +45,7 @@ const sidebarSections: SidebarSection[] = [
                 title: 'Create New',
                 href: '/expeditions/create',
                 icon: Plus,
-            },
-            {
-                title: 'Map View',
-                href: '/expeditions/map',
-                icon: MapPin,
-            },
+            }
         ],
     },
     {
