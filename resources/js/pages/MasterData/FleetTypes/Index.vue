@@ -1,14 +1,13 @@
 <template>
   <AppLayout title="Fleet Types">
-    
     <div class="space-y-6 p-5">
       <!-- Header -->
       <div class="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <div>
-          <h1 class="text-2xl font-bold">Fleet Types</h1>
-          <p class="text-muted-foreground">Manage fleet types for shipping</p>
+          <h1 class="text-2xl font-bold text-gray-900">Fleet Types</h1>
+          <p class="text-muted-foreground">Manage fleet types for shipping operations</p>
         </div>
-        <Link :href="route('fleet-types.create')" class="inline-flex items-center px-4 py-2 bg-black text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+        <Link :href="route('fleet-types.create')" class="inline-flex items-center px-4 py-2 bg-black text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
           <Icon name="plus" class="mr-2 h-4 w-4" />
           Add Fleet Type
         </Link>
@@ -24,17 +23,32 @@
       </div>
 
       <!-- Search and Filters -->
-      <div class="flex flex-col space-y-4 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
-        <div class="relative flex-1 max-w-sm">
-          <Icon name="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Search fleet types..."
-            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-      </div>
+      <Card>
+        <CardContent>
+          <div class="flex flex-col space-y-4 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
+            <div class="flex-1 relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Icon name="search" class="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                v-model="searchQuery"
+                type="text"
+                placeholder="Search fleet types by name or description..."
+                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              />
+            </div>
+            <Button
+              v-if="searchQuery"
+              variant="outline"
+              @click="clearSearch"
+              class="shrink-0"
+            >
+              <Icon name="x" class="mr-2 h-4 w-4" />
+              Clear
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       <!-- Fleet Types Table -->
       <Card>
@@ -46,30 +60,30 @@
             </CardDescription>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent class="p-0">
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead>
                 <tr class="border-b">
-                  <th class="text-left font-medium p-2">Name</th>
-                  <th class="text-left font-medium p-2">Description</th>
-                  <th class="text-left font-medium p-2">Shippings</th>
-                  <th class="text-left font-medium p-2">Created</th>
-                  <th class="text-left font-medium p-2">Actions</th>
+                  <th class="text-left font-medium p-4">Name</th>
+                  <th class="text-left font-medium p-4">Description</th>
+                  <th class="text-left font-medium p-4">Fleets</th>
+                  <th class="text-left font-medium p-4">Created</th>
+                  <th class="text-left font-medium p-4">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="fleetType in filteredFleetTypes" :key="fleetType.id" class="border-b hover:bg-gray-50">
-                  <td class="p-2 font-medium">{{ fleetType.name }}</td>
-                  <td class="p-2 text-gray-600">{{ fleetType.description || '-' }}</td>
-                  <td class="p-2 text-gray-500">
+                <tr v-for="fleetType in filteredFleetTypes" :key="fleetType.id" class="border-b hover:bg-gray-50 transition-colors">
+                  <td class="p-4 font-medium">{{ fleetType.name }}</td>
+                  <td class="p-4 text-gray-600">{{ fleetType.description || '-' }}</td>
+                  <td class="p-4 text-gray-500">
                     <div class="flex items-center">
                       <Icon name="truck" class="h-4 w-4 mr-2 text-gray-400" />
-                      {{ fleetType.shippings_count || 0 }}
+                      {{ fleetType.fleets_count || 0 }}
                     </div>
                   </td>
-                  <td class="p-2 text-gray-500">{{ formatDate(fleetType.created_at) }}</td>
-                  <td class="p-2">
+                  <td class="p-4 text-gray-500">{{ formatDate(fleetType.created_at) }}</td>
+                  <td class="p-4">
                     <div class="flex items-center space-x-2">
                       <Button variant="outline" size="sm" as-child>
                         <Link :href="route('fleet-types.edit', fleetType.id)">
@@ -89,64 +103,15 @@
                 </tr>
                 <tr v-if="filteredFleetTypes.length === 0">
                   <td colspan="5" class="p-8 text-center text-gray-500">
-                    No fleet types found. Create your first fleet type to get started.
+                    <div class="flex flex-col items-center space-y-2">
+                      <Icon name="truck" class="h-12 w-12 text-gray-300" />
+                      <p class="text-lg font-medium">No fleet types found</p>
+                      <p class="text-sm">Create your first fleet type to get started.</p>
+                    </div>
                   </td>
                 </tr>
               </tbody>
             </table>
-          </div>
-
-          <!-- Pagination -->
-          <div v-if="fleetTypes.links && fleetTypes.links.length > 3" class="mt-6">
-            <nav class="flex items-center justify-between">
-              <div class="flex-1 flex justify-between sm:hidden">
-                <Link 
-                  v-if="fleetTypes.prev_page_url" 
-                  :href="fleetTypes.prev_page_url"
-                  class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                >
-                  Previous
-                </Link>
-                <Link 
-                  v-if="fleetTypes.next_page_url" 
-                  :href="fleetTypes.next_page_url"
-                  class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                >
-                  Next
-                </Link>
-              </div>
-              <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                <div>
-                  <p class="text-sm text-gray-700">
-                    Showing
-                    <span class="font-medium">{{ fleetTypes.from }}</span>
-                    to
-                    <span class="font-medium">{{ fleetTypes.to }}</span>
-                    of
-                    <span class="font-medium">{{ fleetTypes.total }}</span>
-                    results
-                  </p>
-                </div>
-                <div>
-                  <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                    <Link 
-                      v-for="(link, index) in fleetTypes.links" 
-                      :key="index"
-                      :href="link.url || '#'"
-                      v-html="link.label"
-                      :class="[
-                        'relative inline-flex items-center px-4 py-2 text-sm font-medium border',
-                        link.url === null 
-                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                          : link.active 
-                            ? 'z-10 bg-blue-50 border-blue-500 text-blue-600' 
-                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                      ]"
-                    />
-                  </nav>
-                </div>
-              </div>
-            </nav>
           </div>
         </CardContent>
       </Card>
@@ -159,6 +124,9 @@
           <DialogTitle>Delete Fleet Type</DialogTitle>
           <DialogDescription>
             Are you sure you want to delete "{{ fleetTypeToDelete?.name }}"? This action cannot be undone.
+            <span v-if="fleetTypeToDelete?.fleets_count && fleetTypeToDelete.fleets_count > 0" class="block mt-2 text-red-600">
+              This fleet type has {{ fleetTypeToDelete.fleets_count }} fleets and cannot be deleted.
+            </span>
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -166,6 +134,7 @@
             Cancel
           </Button>
           <Button 
+            v-if="!fleetTypeToDelete?.fleets_count || fleetTypeToDelete.fleets_count === 0"
             variant="destructive" 
             @click="confirmDelete"
             :disabled="isDeleting"
@@ -200,7 +169,7 @@ interface FleetType {
   id: number
   name: string
   description?: string
-  shippings_count?: number
+  fleets_count?: number
   created_at: string
   updated_at: string
 }
@@ -252,6 +221,10 @@ const formatDate = (dateString: string) => {
   const month = monthNames[date.getMonth()]
   const year = date.getFullYear()
   return `${day}-${month}-${year}`
+}
+
+const clearSearch = () => {
+  searchQuery.value = ''
 }
 
 const deleteFleetType = (fleetType: FleetType) => {

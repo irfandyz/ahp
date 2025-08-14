@@ -1,14 +1,13 @@
 <template>
   <AppLayout title="Fleet Vehicles">
-    
     <div class="space-y-6 p-5">
       <!-- Header -->
       <div class="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <div>
-          <h1 class="text-2xl font-bold">Fleet Vehicles</h1>
-          <p class="text-muted-foreground">Manage your fleet</p>
+          <h1 class="text-2xl font-bold text-gray-900">Fleet Vehicles</h1>
+          <p class="text-muted-foreground">Manage your fleet vehicles and their assignments</p>
         </div>
-        <Link :href="route('fleets.create')" class="inline-flex items-center px-4 py-2 bg-black text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+        <Link :href="route('fleets.create')" class="inline-flex items-center px-4 py-2 bg-black text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
           <Icon name="plus" class="mr-2 h-4 w-4" />
           Add Vehicle
         </Link>
@@ -24,70 +23,69 @@
       </div>
 
       <!-- Search and Filters -->
-      <div class="flex flex-col space-y-4 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
-        <form @submit.prevent="performSearch" class="flex-1 max-w-sm">
-          <div class="relative">
-            <Icon name="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search vehicles..."
-              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-            <button
-              type="submit"
-              class="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
+      <Card>
+        <CardContent>
+          <div class="flex flex-col space-y-4 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
+            <div class="flex-1 relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Icon name="search" class="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                v-model="searchQuery"
+                type="text"
+                placeholder="Search vehicles by plate number, description, or fleet type..."
+                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              />
+            </div>
+            <Button
+              v-if="searchQuery"
+              variant="outline"
+              @click="clearSearch"
+              class="shrink-0"
             >
-              <Icon name="search" class="h-4 w-4" />
-            </button>
+              <Icon name="x" class="mr-2 h-4 w-4" />
+              Clear
+            </Button>
           </div>
-        </form>
-        <Button 
-          v-if="hasSearchQuery" 
-          variant="outline" 
-          @click="clearSearch"
-          class="shrink-0"
-        >
-          Clear Search
-        </Button>
-      </div>
+        </CardContent>
+      </Card>
 
       <!-- Fleet Vehicles Table -->
       <Card>
         <CardHeader>
           <div>
-                      <CardTitle>Fleet Vehicles List</CardTitle>
-          <CardDescription>
-            View and manage all fleet vehicles
-          </CardDescription>
+            <CardTitle>Fleet Vehicles List</CardTitle>
+            <CardDescription>
+              View and manage all fleet vehicles
+            </CardDescription>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent class="p-0">
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead>
                 <tr class="border-b">
-                  <th class="text-left font-medium p-2">Plate Number</th>
-                  <th class="text-left font-medium p-2">Fleet Type</th>
-                  <th class="text-left font-medium p-2">Description</th>
-                  <th class="text-left font-medium p-2">Expeditions</th>
-                  <th class="text-left font-medium p-2">Created</th>
-                  <th class="text-left font-medium p-2">Actions</th>
+                  <th class="text-left font-medium p-4">Plate Number</th>
+                  <th class="text-left font-medium p-4">Fleet Type</th>
+                  <th class="text-left font-medium p-4">Description</th>
+                  <th class="text-left font-medium p-4">Expeditions</th>
+                  <th class="text-left font-medium p-4">Created</th>
+                  <th class="text-left font-medium p-4">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="fleet in fleets.data" :key="fleet.id" class="border-b hover:bg-gray-50">
-                  <td class="p-2 font-medium">{{ fleet.plate_number }}</td>
-                  <td class="p-2 text-gray-600">{{ fleet.fleet_type?.name || '-' }}</td>
-                  <td class="p-2 text-gray-600">{{ fleet.description || '-' }}</td>
-                  <td class="p-2 text-gray-500">
+                <tr v-for="fleet in filteredFleets" :key="fleet.id" class="border-b hover:bg-gray-50 transition-colors">
+                  <td class="p-4 font-medium">{{ fleet.plate_number }}</td>
+                  <td class="p-4 text-gray-600">{{ fleet.fleet_type?.name || '-' }}</td>
+                  <td class="p-4 text-gray-600">{{ fleet.description || '-' }}</td>
+                  <td class="p-4 text-gray-500">
                     <div class="flex items-center">
                       <Icon name="truck" class="h-4 w-4 mr-2 text-gray-400" />
                       {{ fleet.expeditions_count || 0 }}
                     </div>
                   </td>
-                  <td class="p-2 text-gray-500">{{ formatDate(fleet.created_at) }}</td>
-                  <td class="p-2">
+                  <td class="p-4 text-gray-500">{{ formatDate(fleet.created_at) }}</td>
+                  <td class="p-4">
                     <div class="flex items-center space-x-2">
                       <Button variant="outline" size="sm" as-child>
                         <Link :href="route('fleets.show', fleet.id)">
@@ -110,66 +108,17 @@
                     </div>
                   </td>
                 </tr>
-                <tr v-if="fleets.data.length === 0">
+                <tr v-if="filteredFleets.length === 0">
                   <td colspan="6" class="p-8 text-center text-gray-500">
-                    {{ searchQuery ? 'No fleet vehicles found matching your search.' : 'No fleet vehicles found. Create your first vehicle to get started.' }}
+                    <div class="flex flex-col items-center space-y-2">
+                      <Icon name="truck" class="h-12 w-12 text-gray-300" />
+                      <p class="text-lg font-medium">No fleet vehicles found</p>
+                      <p class="text-sm">Create your first fleet vehicle to get started.</p>
+                    </div>
                   </td>
                 </tr>
               </tbody>
             </table>
-          </div>
-
-          <!-- Pagination -->
-          <div v-if="fleets.links && fleets.links.length > 3" class="mt-6">
-            <nav class="flex items-center justify-between">
-              <div class="flex-1 flex justify-between sm:hidden">
-                <Link 
-                  v-if="fleets.prev_page_url" 
-                  :href="fleets.prev_page_url"
-                  class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                >
-                  Previous
-                </Link>
-                <Link 
-                  v-if="fleets.next_page_url" 
-                  :href="fleets.next_page_url"
-                  class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                >
-                  Next
-                </Link>
-              </div>
-              <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                <div>
-                  <p class="text-sm text-gray-700">
-                    Showing
-                    <span class="font-medium">{{ fleets.from }}</span>
-                    to
-                    <span class="font-medium">{{ fleets.to }}</span>
-                    of
-                    <span class="font-medium">{{ fleets.total }}</span>
-                    results
-                  </p>
-                </div>
-                <div>
-                  <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                    <Link 
-                      v-for="(link, index) in fleets.links" 
-                      :key="index"
-                      :href="link.url || '#'"
-                      v-html="link.label"
-                      :class="[
-                        'relative inline-flex items-center px-4 py-2 text-sm font-medium border',
-                        link.url === null 
-                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                          : link.active 
-                            ? 'z-10 bg-blue-50 border-blue-500 text-blue-600' 
-                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                      ]"
-                    />
-                  </nav>
-                </div>
-              </div>
-            </nav>
           </div>
         </CardContent>
       </Card>
@@ -182,6 +131,9 @@
           <DialogTitle>Delete Fleet Vehicle</DialogTitle>
           <DialogDescription>
             Are you sure you want to delete "{{ fleetToDelete?.plate_number }}"? This action cannot be undone.
+            <span v-if="fleetToDelete?.expeditions_count && fleetToDelete.expeditions_count > 0" class="block mt-2 text-red-600">
+              This vehicle has {{ fleetToDelete.expeditions_count }} expeditions and cannot be deleted.
+            </span>
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -189,6 +141,7 @@
             Cancel
           </Button>
           <Button 
+            v-if="!fleetToDelete?.expeditions_count || fleetToDelete.expeditions_count === 0"
             variant="destructive" 
             @click="confirmDelete"
             :disabled="isDeleting"
@@ -260,7 +213,18 @@ interface Props {
 
 const props = defineProps<Props>()
 const page = usePage()
-const searchQuery = ref(props.filters?.search || '')
+const searchQuery = ref('')
+
+const filteredFleets = computed(() => {
+  if (!searchQuery.value) return props.fleets.data
+  
+  return props.fleets.data.filter(fleet =>
+    fleet.plate_number.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+    (fleet.description && fleet.description.toLowerCase().includes(searchQuery.value.toLowerCase())) ||
+    (fleet.fleet_type?.name && fleet.fleet_type.name.toLowerCase().includes(searchQuery.value.toLowerCase()))
+  )
+})
+
 const showDeleteDialog = ref(false)
 const fleetToDelete = ref<Fleet | null>(null)
 const isDeleting = ref(false)
@@ -282,11 +246,6 @@ const performSearch = () => {
 
 const clearSearch = () => {
   searchQuery.value = ''
-  router.get(route('fleets.index'), {}, {
-    preserveState: true,
-    preserveScroll: true,
-    replace: true
-  })
 }
 
 const formatDate = (dateString: string) => {

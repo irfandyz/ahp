@@ -1,14 +1,13 @@
 <template>
   <AppLayout title="Drivers">
-    
     <div class="space-y-6 p-5">
       <!-- Header -->
       <div class="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <div>
-          <h1 class="text-2xl font-bold">Drivers</h1>
+          <h1 class="text-2xl font-bold text-gray-900">Drivers</h1>
           <p class="text-muted-foreground">Manage drivers for shipping operations</p>
         </div>
-        <Link :href="route('drivers.create')" class="inline-flex items-center px-4 py-2 bg-black text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+        <Link :href="route('drivers.create')" class="inline-flex items-center px-4 py-2 bg-black text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
           <Icon name="plus" class="mr-2 h-4 w-4" />
           Add Driver
         </Link>
@@ -24,33 +23,32 @@
       </div>
 
       <!-- Search and Filters -->
-      <div class="flex flex-col space-y-4 sm:flex-row sm-:items-center sm:space-y-0 sm:space-x-4">
-        <form @submit.prevent="performSearch" class="flex-1 max-w-sm">
-          <div class="relative">
-            <Icon name="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search drivers..."
-              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-            <button
-              type="submit"
-              class="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
+      <Card>
+        <CardContent>
+          <div class="flex flex-col space-y-4 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
+            <div class="flex-1 relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Icon name="search" class="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                v-model="searchQuery"
+                type="text"
+                placeholder="Search drivers by name, phone, email, or address..."
+                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              />
+            </div>
+            <Button
+              v-if="searchQuery"
+              variant="outline"
+              @click="clearSearch"
+              class="shrink-0"
             >
-              <Icon name="search" class="h-4 w-4" />
-            </button>
+              <Icon name="x" class="mr-2 h-4 w-4" />
+              Clear
+            </Button>
           </div>
-        </form>
-        <Button 
-          v-if="hasSearchQuery" 
-          variant="outline" 
-          @click="clearSearch"
-          class="shrink-0"
-        >
-          Clear Search
-        </Button>
-      </div>
+        </CardContent>
+      </Card>
 
       <!-- Drivers Table -->
       <Card>
@@ -62,34 +60,43 @@
             </CardDescription>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent class="p-0">
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead>
                 <tr class="border-b">
-                  <th class="text-left font-medium p-2">Name</th>
-                  <th class="text-left font-medium p-2">Phone</th>
-                  <th class="text-left font-medium p-2">Email</th>
-                  <th class="text-left font-medium p-2">Address</th>
-                  <th class="text-left font-medium p-2">Expeditions</th>
-                  <th class="text-left font-medium p-2">Created</th>
-                  <th class="text-left font-medium p-2">Actions</th>
+                  <th class="text-left font-medium p-4">Name</th>
+                  <th class="text-left font-medium p-4">Contact Info</th>
+                  <th class="text-left font-medium p-4">Address</th>
+                  <th class="text-left font-medium p-4">Expeditions</th>
+                  <th class="text-left font-medium p-4">Created</th>
+                  <th class="text-left font-medium p-4">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="driver in drivers.data" :key="driver.id" class="border-b hover:bg-gray-50">
-                  <td class="p-2 font-medium">{{ driver.name }}</td>
-                  <td class="p-2 text-gray-600">{{ driver.phone || '-' }}</td>
-                  <td class="p-2 text-gray-600">{{ driver.email || '-' }}</td>
-                  <td class="p-2 text-gray-600">{{ driver.address || '-' }}</td>
-                  <td class="p-2 text-gray-500">
+                <tr v-for="driver in filteredDrivers" :key="driver.id" class="border-b hover:bg-gray-50 transition-colors">
+                  <td class="p-4 font-medium">{{ driver.name }}</td>
+                  <td class="p-4">
+                    <div class="space-y-1">
+                      <div v-if="driver.phone" class="flex items-center text-sm text-gray-600">
+                        <Icon name="phone" class="h-4 w-4 mr-2 text-gray-400" />
+                        {{ driver.phone }}
+                      </div>
+                      <div v-if="driver.email" class="flex items-center text-sm text-gray-600">
+                        <Icon name="mail" class="h-4 w-4 mr-2 text-gray-400" />
+                        {{ driver.email }}
+                      </div>
+                    </div>
+                  </td>
+                  <td class="p-4 text-gray-600">{{ driver.address || '-' }}</td>
+                  <td class="p-4 text-gray-500">
                     <div class="flex items-center">
                       <Icon name="truck" class="h-4 w-4 mr-2 text-gray-400" />
                       {{ driver.expeditions_count || 0 }}
                     </div>
                   </td>
-                  <td class="p-2 text-gray-500">{{ formatDate(driver.created_at) }}</td>
-                  <td class="p-2">
+                  <td class="p-4 text-gray-500">{{ formatDate(driver.created_at) }}</td>
+                  <td class="p-4">
                     <div class="flex items-center space-x-2">
                       <Button variant="outline" size="sm" as-child>
                         <Link :href="route('drivers.show', driver.id)">
@@ -112,66 +119,17 @@
                     </div>
                   </td>
                 </tr>
-                <tr v-if="drivers.data.length === 0">
-                  <td colspan="7" class="p-8 text-center text-gray-500">
-                    {{ searchQuery ? 'No drivers found matching your search.' : 'No drivers found. Create your first driver to get started.' }}
+                <tr v-if="filteredDrivers.length === 0">
+                  <td colspan="6" class="p-8 text-center text-gray-500">
+                    <div class="flex flex-col items-center space-y-2">
+                      <Icon name="user" class="h-12 w-12 text-gray-300" />
+                      <p class="text-lg font-medium">No drivers found</p>
+                      <p class="text-sm">Create your first driver to get started.</p>
+                    </div>
                   </td>
                 </tr>
               </tbody>
             </table>
-          </div>
-
-          <!-- Pagination -->
-          <div v-if="drivers.links && drivers.links.length > 3" class="mt-6">
-            <nav class="flex items-center justify-between">
-              <div class="flex-1 flex justify-between sm:hidden">
-                <Link 
-                  v-if="drivers.prev_page_url" 
-                  :href="drivers.prev_page_url"
-                  class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                >
-                  Previous
-                </Link>
-                <Link 
-                  v-if="drivers.next_page_url" 
-                  :href="drivers.next_page_url"
-                  class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                >
-                  Next
-                </Link>
-              </div>
-              <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                <div>
-                  <p class="text-sm text-gray-700">
-                    Showing
-                    <span class="font-medium">{{ drivers.from }}</span>
-                    to
-                    <span class="font-medium">{{ drivers.to }}</span>
-                    of
-                    <span class="font-medium">{{ drivers.total }}</span>
-                    results
-                  </p>
-                </div>
-                <div>
-                  <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                    <Link 
-                      v-for="(link, index) in drivers.links" 
-                      :key="index"
-                      :href="link.url || '#'"
-                      v-html="link.label"
-                      :class="[
-                        'relative inline-flex items-center px-4 py-2 text-sm font-medium border',
-                        link.url === null 
-                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                          : link.active 
-                            ? 'z-10 bg-blue-50 border-blue-500 text-blue-600' 
-                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                      ]"
-                    />
-                  </nav>
-                </div>
-              </div>
-            </nav>
           </div>
         </CardContent>
       </Card>
@@ -184,6 +142,9 @@
           <DialogTitle>Delete Driver</DialogTitle>
           <DialogDescription>
             Are you sure you want to delete "{{ driverToDelete?.name }}"? This action cannot be undone.
+            <span v-if="driverToDelete?.expeditions_count && driverToDelete.expeditions_count > 0" class="block mt-2 text-red-600">
+              This driver has {{ driverToDelete.expeditions_count }} expeditions and cannot be deleted.
+            </span>
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -191,6 +152,7 @@
             Cancel
           </Button>
           <Button 
+            v-if="!driverToDelete?.expeditions_count || driverToDelete.expeditions_count === 0"
             variant="destructive" 
             @click="confirmDelete"
             :disabled="isDeleting"
@@ -258,7 +220,19 @@ interface Props {
 
 const props = defineProps<Props>()
 const page = usePage()
-const searchQuery = ref(props.filters?.search || '')
+const searchQuery = ref('')
+
+const filteredDrivers = computed(() => {
+  if (!searchQuery.value) return props.drivers.data
+  
+  return props.drivers.data.filter(driver =>
+    driver.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+    (driver.phone && driver.phone.toLowerCase().includes(searchQuery.value.toLowerCase())) ||
+    (driver.email && driver.email.toLowerCase().includes(searchQuery.value.toLowerCase())) ||
+    (driver.address && driver.address.toLowerCase().includes(searchQuery.value.toLowerCase()))
+  )
+})
+
 const showDeleteDialog = ref(false)
 const driverToDelete = ref<Driver | null>(null)
 const isDeleting = ref(false)
@@ -280,11 +254,6 @@ const performSearch = () => {
 
 const clearSearch = () => {
   searchQuery.value = ''
-  router.get(route('drivers.index'), {}, {
-    preserveState: true,
-    preserveScroll: true,
-    replace: true
-  })
 }
 
 const formatDate = (dateString: string) => {

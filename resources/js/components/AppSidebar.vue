@@ -57,6 +57,11 @@ const sidebarSections: SidebarSection[] = [
                 icon: Users,
             },
             {
+                title: 'Consignees',
+                href: '/consignees',
+                icon: Building2,
+            },
+            {
                 title: 'Customers',
                 href: '/customers',
                 icon: Users,

@@ -17,12 +17,30 @@
       <Card>
         <CardHeader>
           <CardTitle>Expedition Information</CardTitle>
-          <CardDescription>
-            Fill in the details below to create a new expedition. The order number will be generated automatically based on the selected customer.
-          </CardDescription>
+                  <CardDescription>
+          Fill in the details below to create a new expedition. Please provide a unique order number for this expedition.
+        </CardDescription>
         </CardHeader>
         <CardContent>
           <form @submit.prevent="submit" class="space-y-6">
+            <!-- Order Number Field -->
+            <div>
+              <label for="order_number" class="block text-sm font-medium text-gray-700 mb-2">
+                Order Number <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="order_number"
+                v-model="form.order_number"
+                type="text"
+                required
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter unique order number (e.g., EXP-2024-001)"
+              />
+              <div v-if="form.errors.order_number" class="mt-1 text-sm text-red-600">
+                {{ form.errors.order_number }}
+              </div>
+            </div>
+
             <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div>
                 <label for="customer_id" class="block text-sm font-medium text-gray-700 mb-2">
@@ -58,6 +76,39 @@
               </div>
 
               <div>
+                <label for="consignee_id" class="block text-sm font-medium text-gray-700 mb-2">
+                  Consignee <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                  <input
+                    id="consignee_id"
+                    autocomplete="off"
+                    v-model="consigneeSearch"
+                    type="text"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Search and select consignee"
+                    @focus="showConsigneeDropdown = true"
+                    @blur="handleConsigneeBlur"
+                  />
+                  <input type="hidden" v-model="form.consignee_id" />
+                  <div v-if="form.errors.consignee_id" class="mt-1 text-sm text-red-600">
+                    {{ form.errors.consignee_id }}
+                  </div>
+                  
+                  <!-- Consignee Dropdown -->
+                  <div v-if="showConsigneeDropdown" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                    <div v-for="consignee in filteredConsignees" :key="consignee.id" 
+                         class="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                         @click="selectConsignee(consignee)">
+                      <div class="font-medium">{{ consignee.company }}</div>
+                      <div class="text-sm text-gray-600">{{ consignee.address }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
                 <label for="input_date" class="block text-sm font-medium text-gray-700 mb-2">
                   Input Date <span class="text-red-500">*</span>
                 </label>
@@ -76,35 +127,33 @@
 
               <div class="grid grid-cols-3 gap-4">
                 <div>
-                  <label for="travel_date" class="block text-sm font-medium text-gray-700 mb-2">
-                    Travel Date <span class="text-red-500">*</span>
+                  <label for="etd" class="block text-sm font-medium text-gray-700 mb-2">
+                    ETD (Estimated Time of Departure) <span class="text-red-500">*</span>
                   </label>
                   <input
-                    id="travel_date"
+                    id="etd"
                     autocomplete="off"
-                    v-model="form.travel_date"
+                    v-model="form.etd"
                     type="date"
                     required
                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
-                  <div v-if="form.errors.travel_date" class="mt-1 text-sm text-red-600">
-                    {{ form.errors.travel_date }}
+                  <div v-if="form.errors.etd" class="mt-1 text-sm text-red-600">
+                    {{ form.errors.etd }}
                   </div>
                 </div>
 
                 <div>
                   <label for="eta" class="block text-sm font-medium text-gray-700 mb-2">
-                    ETA (Days) <span class="text-red-500">*</span>
+                    ETA (Estimated Time of Arrival) <span class="text-red-500">*</span>
                   </label>
                   <input
                     id="eta"
                     autocomplete="off"
                     v-model="form.eta"
-                    type="number"
-                    min="1"
+                    type="date"
                     required
                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Days"
                   />
                   <div v-if="form.errors.eta" class="mt-1 text-sm text-red-600">
                     {{ form.errors.eta }}
@@ -720,6 +769,14 @@ interface Customer {
   phone: string
 }
 
+interface Consignee {
+  id: number
+  company: string
+  address: string
+  phone: string
+  email: string
+}
+
 interface Props {
   industrySectors: IndustrySector[]
   routes: Route[]
@@ -727,6 +784,7 @@ interface Props {
   fleets: Fleet[]
   drivers: Driver[]
   customers: Customer[]
+  consignees: Consignee[]
 }
 
 const props = defineProps<Props>()
@@ -760,6 +818,7 @@ const vendorSearch = ref('')
 const fleetSearch = ref('')
 const driverSearch = ref('')
 const customerSearch = ref('')
+const consigneeSearch = ref('')
 
 // Dropdown visibility states
 const showIndustrySectorDropdown = ref(false)
@@ -768,11 +827,14 @@ const showVendorDropdown = ref(false)
 const showFleetDropdown = ref(false)
 const showDriverDropdown = ref(false)
 const showCustomerDropdown = ref(false)
+const showConsigneeDropdown = ref(false)
 
 const form = useForm({
+  order_number: '',
   customer_id: '',
+  consignee_id: '',
   input_date: new Date().toISOString().split('T')[0],
-  travel_date: new Date().toISOString().split('T')[0],
+  etd: new Date().toISOString().split('T')[0],
   origin: '',
   destination: '',
   distance: '',
@@ -798,7 +860,7 @@ const form = useForm({
   port_cost: '',
   insurance_cost: '',
   driver_cost: '',
-  eta: '',
+  eta: new Date().toISOString().split('T')[0],
   // New fields for vendor expedition
   vendor_description: '',
   fleet_description: '',
@@ -813,6 +875,14 @@ const filteredCustomers = computed(() => {
   return props.customers.filter(customer =>
     customer.name.toLowerCase().includes(customerSearch.value.toLowerCase()) ||
     customer.address.toLowerCase().includes(customerSearch.value.toLowerCase())
+  )
+})
+
+const filteredConsignees = computed(() => {
+  if (!consigneeSearch.value) return props.consignees
+  return props.consignees.filter(consignee =>
+    consignee.company.toLowerCase().includes(consigneeSearch.value.toLowerCase()) ||
+    consignee.address.toLowerCase().includes(consigneeSearch.value.toLowerCase())
   )
 })
 
@@ -969,6 +1039,12 @@ const selectCustomer = (customer: Customer) => {
   showCustomerDropdown.value = false
 }
 
+const selectConsignee = (consignee: Consignee) => {
+  form.consignee_id = consignee.id.toString()
+  consigneeSearch.value = consignee.company
+  showConsigneeDropdown.value = false
+}
+
 const selectIndustrySector = (sector: IndustrySector) => {
   form.industry_sector_id = sector.id.toString()
   industrySectorSearch.value = sector.name
@@ -1004,6 +1080,11 @@ const selectDriver = (driver: Driver) => {
 const clearCustomer = () => {
   form.customer_id = ''
   customerSearch.value = ''
+}
+
+const clearConsignee = () => {
+  form.consignee_id = ''
+  consigneeSearch.value = ''
 }
 
 const clearIndustrySector = () => {
@@ -1057,6 +1138,12 @@ const filterDrivers = () => {
 const handleCustomerBlur = () => {
   setTimeout(() => {
     showCustomerDropdown.value = false
+  }, 150)
+}
+
+const handleConsigneeBlur = () => {
+  setTimeout(() => {
+    showConsigneeDropdown.value = false
   }, 150)
 }
 

@@ -16,6 +16,7 @@ class ExpeditionSeeder extends Seeder
     {
         // Get existing IDs for relationships
         $customerIds = DB::table('customers')->pluck('id')->toArray();
+        $consigneeIds = DB::table('consignees')->pluck('id')->toArray();
         $industrySectorIds = DB::table('industry_sectors')->pluck('id')->toArray();
         $routeIds = DB::table('routes')->pluck('id')->toArray();
         $vendorIds = DB::table('vendors')->pluck('id')->toArray();
@@ -28,8 +29,9 @@ class ExpeditionSeeder extends Seeder
             [
                 'order_number' => 'EXP-2024-001',
                 'customer_id' => $customerIds[array_rand($customerIds)] ?? 1,
+                'consignee_id' => $consigneeIds[array_rand($consigneeIds)] ?? 1,
                 'input_date' => Carbon::now()->subDays(rand(1, 30))->format('Y-m-d'),
-                'travel_date' => Carbon::now()->addDays(rand(1, 14))->format('Y-m-d'),
+                'etd' => Carbon::now()->addDays(rand(1, 14))->format('Y-m-d'),
                 'origin' => 'Jakarta',
                 'destination' => 'Bandung',
                 'distance' => rand(150, 200),
@@ -41,7 +43,7 @@ class ExpeditionSeeder extends Seeder
                 'vendor_id' => $vendorIds[array_rand($vendorIds)] ?? 1,
                 'fleet_id' => null,
                 'driver_id' => null,
-                'eta' => rand(2, 5),
+                'eta' => Carbon::now()->addDays(rand(2, 5))->format('Y-m-d'),
                 'user_id' => $userIds[array_rand($userIds)] ?? 1,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
@@ -49,8 +51,9 @@ class ExpeditionSeeder extends Seeder
             [
                 'order_number' => 'EXP-2024-002',
                 'customer_id' => $customerIds[array_rand($customerIds)] ?? 1,
+                'consignee_id' => $consigneeIds[array_rand($consigneeIds)] ?? 1,
                 'input_date' => Carbon::now()->subDays(rand(1, 30))->format('Y-m-d'),
-                'travel_date' => Carbon::now()->addDays(rand(1, 14))->format('Y-m-d'),
+                'etd' => Carbon::now()->addDays(rand(1, 14))->format('Y-m-d'),
                 'origin' => 'Surabaya',
                 'destination' => 'Malang',
                 'distance' => rand(80, 120),
@@ -62,7 +65,7 @@ class ExpeditionSeeder extends Seeder
                 'vendor_id' => null,
                 'fleet_id' => $fleetIds[array_rand($fleetIds)] ?? 1,
                 'driver_id' => $driverIds[array_rand($driverIds)] ?? 1,
-                'eta' => rand(1, 3),
+                'eta' => Carbon::now()->addDays(rand(1, 3))->format('Y-m-d'),
                 'user_id' => $userIds[array_rand($userIds)] ?? 1,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
@@ -70,8 +73,9 @@ class ExpeditionSeeder extends Seeder
             [
                 'order_number' => 'EXP-2024-003',
                 'customer_id' => $customerIds[array_rand($customerIds)] ?? 1,
+                'consignee_id' => $consigneeIds[array_rand($consigneeIds)] ?? 1,
                 'input_date' => Carbon::now()->subDays(rand(1, 30))->format('Y-m-d'),
-                'travel_date' => Carbon::now()->addDays(rand(1, 14))->format('Y-m-d'),
+                'etd' => Carbon::now()->addDays(rand(1, 14))->format('Y-m-d'),
                 'origin' => 'Medan',
                 'destination' => 'Pekanbaru',
                 'distance' => rand(300, 400),
@@ -83,7 +87,7 @@ class ExpeditionSeeder extends Seeder
                 'vendor_id' => $vendorIds[array_rand($vendorIds)] ?? 1,
                 'fleet_id' => null,
                 'driver_id' => null,
-                'eta' => rand(3, 7),
+                'eta' => Carbon::now()->addDays(rand(3, 7))->format('Y-m-d'),
                 'user_id' => $userIds[array_rand($userIds)] ?? 1,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
@@ -91,8 +95,9 @@ class ExpeditionSeeder extends Seeder
             [
                 'order_number' => 'EXP-2024-004',
                 'customer_id' => $customerIds[array_rand($customerIds)] ?? 1,
+                'consignee_id' => $consigneeIds[array_rand($consigneeIds)] ?? 1,
                 'input_date' => Carbon::now()->subDays(rand(1, 30))->format('Y-m-d'),
-                'travel_date' => Carbon::now()->addDays(rand(1, 14))->format('Y-m-d'),
+                'etd' => Carbon::now()->addDays(rand(1, 14))->format('Y-m-d'),
                 'origin' => 'Semarang',
                 'destination' => 'Yogyakarta',
                 'distance' => rand(100, 150),
@@ -104,7 +109,7 @@ class ExpeditionSeeder extends Seeder
                 'vendor_id' => null,
                 'fleet_id' => $fleetIds[array_rand($fleetIds)] ?? 1,
                 'driver_id' => $driverIds[array_rand($driverIds)] ?? 1,
-                'eta' => rand(1, 2),
+                'eta' => Carbon::now()->addDays(rand(1, 2))->format('Y-m-d'),
                 'user_id' => $userIds[array_rand($userIds)] ?? 1,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
@@ -112,8 +117,9 @@ class ExpeditionSeeder extends Seeder
             [
                 'order_number' => 'EXP-2024-005',
                 'customer_id' => $customerIds[array_rand($customerIds)] ?? 1,
+                'consignee_id' => $consigneeIds[array_rand($consigneeIds)] ?? 1,
                 'input_date' => Carbon::now()->subDays(rand(1, 30))->format('Y-m-d'),
-                'travel_date' => Carbon::now()->addDays(rand(1, 14))->format('Y-m-d'),
+                'etd' => Carbon::now()->addDays(rand(1, 14))->format('Y-m-d'),
                 'origin' => 'Makassar',
                 'destination' => 'Manado',
                 'distance' => rand(500, 600),
@@ -125,7 +131,7 @@ class ExpeditionSeeder extends Seeder
                 'vendor_id' => $vendorIds[array_rand($vendorIds)] ?? 1,
                 'fleet_id' => null,
                 'driver_id' => null,
-                'eta' => rand(5, 10),
+                'eta' => Carbon::now()->addDays(rand(5, 10))->format('Y-m-d'),
                 'user_id' => $userIds[array_rand($userIds)] ?? 1,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),

@@ -31,10 +31,28 @@ Route::middleware(['auth'])->group(function () {
     // Customers
     Route::resource('customers', App\Http\Controllers\CustomerController::class);
     
+    // Consignees
+    Route::resource('consignees', App\Http\Controllers\ConsigneeController::class);
+    
     // Shippings
     Route::resource('fleets', App\Http\Controllers\FleetController::class);
     
     // Expeditions
+    Route::get('expeditions/{expedition}/print-shipping-instruction', [App\Http\Controllers\ExpeditionController::class, 'printShippingInstruction'])
+        ->name('expeditions.print-shipping-instruction');
+    
+    // Expedition Goods
+    Route::get('expeditions/{expedition}/goods', [App\Http\Controllers\ExpeditionController::class, 'showGoods'])
+        ->name('expeditions.goods.show');
+    Route::get('expeditions/{expedition}/goods/create', [App\Http\Controllers\ExpeditionController::class, 'createGoods'])
+        ->name('expeditions.goods.create');
+    Route::get('expeditions/{expedition}/goods/edit', [App\Http\Controllers\ExpeditionController::class, 'editGoods'])
+        ->name('expeditions.goods.edit');
+    Route::post('expeditions/{expedition}/goods', [App\Http\Controllers\ExpeditionController::class, 'storeGoods'])
+        ->name('expeditions.goods.store');
+    Route::put('expeditions/{expedition}/goods', [App\Http\Controllers\ExpeditionController::class, 'updateGoods'])
+        ->name('expeditions.goods.update');
+    
     Route::resource('expeditions', App\Http\Controllers\ExpeditionController::class);
 });
 

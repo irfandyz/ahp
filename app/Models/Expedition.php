@@ -16,8 +16,9 @@ class Expedition extends Model
     protected $fillable = [
         'order_number',
         'customer_id',
+        'consignee_id',
         'input_date',
-        'travel_date',
+        'etd',
         'origin',
         'destination',
         'distance',
@@ -40,9 +41,9 @@ class Expedition extends Model
      */
     protected $casts = [
         'input_date' => 'date',
-        'travel_date' => 'date',
+        'etd' => 'date',
         'distance' => 'integer',
-        'eta' => 'integer',
+        'eta' => 'date',
     ];
 
     /**
@@ -59,6 +60,14 @@ class Expedition extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    /**
+     * Get the consignee that owns the expedition.
+     */
+    public function consignee(): BelongsTo
+    {
+        return $this->belongsTo(Consignee::class);
     }
 
     /**
@@ -115,5 +124,13 @@ class Expedition extends Model
     public function route(): BelongsTo
     {
         return $this->belongsTo(Route::class);
+    }
+
+    /**
+     * Get the goods for this expedition.
+     */
+    public function expeditionGoods(): HasOne
+    {
+        return $this->hasOne(ExpeditionGood::class);
     }
 }

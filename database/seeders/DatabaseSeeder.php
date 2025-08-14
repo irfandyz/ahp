@@ -23,7 +23,9 @@ class DatabaseSeeder extends Seeder
             DriverSeeder::class,
             FleetSeeder::class,
             CustomerSeeder::class,
+            ConsigneeSeeder::class,
             ExpeditionSeeder::class,
+            ExpeditionGoodSeeder::class,
         ]);
     }
 }

@@ -4,6 +4,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+
 import { ArrowLeft, Save } from 'lucide-vue-next';
 import { type BreadcrumbItem } from '@/types';
 
@@ -119,28 +120,34 @@ const submit = () => {
                         </div>
 
                         <div>
-                            <Label for="moda">Transportation Mode *</Label>
-                            <Input
+                            <Label for="moda">Moda *</Label>
+                            <select
                                 id="moda"
                                 v-model="form.moda"
-                                type="text"
                                 required
-                                placeholder="e.g., Truck, Ship, Train, Air"
-                                :class="{ 'border-red-500': form.errors.moda }"
-                            />
+                                :class="[
+                                    'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+                                    form.errors.moda ? 'border-red-500' : ''
+                                ]"
+                            >
+                                <option value="">Select transportation mode</option>
+                                <option value="land">Land</option>
+                                <option value="air">Air</option>
+                                <option value="sea">Sea</option>
+                            </select>
                             <p v-if="form.errors.moda" class="text-red-500 text-sm mt-1">
                                 {{ form.errors.moda }}
                             </p>
                         </div>
 
                         <div>
-                            <Label for="fleet">Fleet Size *</Label>
+                            <Label for="fleet">Fleet *</Label>
                             <Input
                                 id="fleet"
                                 v-model="form.fleet"
                                 type="text"
                                 required
-                                placeholder="e.g., Small, Medium, Large"
+                                placeholder="e.g., Train, Truck, Ship, Aircraft"
                                 :class="{ 'border-red-500': form.errors.fleet }"
                             />
                             <p v-if="form.errors.fleet" class="text-red-500 text-sm mt-1">

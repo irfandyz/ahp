@@ -58,18 +58,18 @@
               </div>
 
               <div>
-                <label for="travel_date" class="block text-sm font-medium text-gray-700 mb-2">
-                  Travel Date <span class="text-red-500">*</span>
+                <label for="etd" class="block text-sm font-medium text-gray-700 mb-2">
+                  ETD (Estimated Time of Departure) <span class="text-red-500">*</span>
                 </label>
                 <input
-                  id="travel_date"
-                  v-model="form.travel_date"
+                  id="etd"
+                  v-model="form.etd"
                   type="date"
                   required
                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
-                <div v-if="form.errors.travel_date" class="mt-1 text-sm text-red-600">
-                  {{ form.errors.travel_date }}
+                <div v-if="form.errors.etd" class="mt-1 text-sm text-red-600">
+                  {{ form.errors.etd }}
                 </div>
               </div>
 
@@ -77,15 +77,13 @@
                 <label for="eta" class="block text-sm font-medium text-gray-700 mb-2">
                   ETA (Estimated Time of Arrival) <span class="text-red-500">*</span>
                 </label>
-                <input
-                  id="eta"
-                  v-model="form.eta"
-                  type="number"
-                  min="1"
-                  required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter number of days for arrival"
-                />
+                                  <input
+                    id="eta"
+                    v-model="form.eta"
+                    type="date"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
                 <div v-if="form.errors.eta" class="mt-1 text-sm text-red-600">
                   {{ form.errors.eta }}
                 </div>
@@ -328,7 +326,7 @@ interface Expedition {
   id: number
   order_number: string
   input_date: string
-  travel_date: string
+  etd: string
   origin: string
   destination: string
   description?: string
@@ -338,7 +336,7 @@ interface Expedition {
   cost: number
   vendor_id: number
   shipping_id?: number
-  eta: number
+  eta: string
   user_id: number
   created_at: string
   updated_at: string
@@ -366,7 +364,7 @@ const showVendorDropdown = ref(false)
 const form = useForm({
   order_number: props.expedition.order_number,
   input_date: props.expedition.input_date ? new Date(props.expedition.input_date).toISOString().split('T')[0] : '',
-  travel_date: props.expedition.travel_date ? new Date(props.expedition.travel_date).toISOString().split('T')[0] : '',
+  etd: props.expedition.etd ? new Date(props.expedition.etd).toISOString().split('T')[0] : '',
   origin: props.expedition.origin,
   destination: props.expedition.destination,
   description: props.expedition.description || '',
@@ -376,7 +374,7 @@ const form = useForm({
   cost: props.expedition.cost,
   vendor_id: props.expedition.vendor_id,
   shipping_id: props.expedition.shipping_id || '',
-  eta: props.expedition.eta,
+  eta: props.expedition.eta ? new Date(props.expedition.eta).toISOString().split('T')[0] : '',
 })
 
 // Initialize search values with current selections

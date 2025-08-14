@@ -32,7 +32,10 @@ class ExpeditionController extends Controller
             'fleet.fleetType:id,name',
             'driver:id,name',
             'fleetCosts',
-            'vendorCosts'
+            'vendorCosts',
+            'customer:id,name,address,phone,email,npwp,pic_name,pic_phone',
+            'consignee:id,company,address,phone,email',
+            'expeditionGoods.goodDetails'
         ])
         ->orderBy('created_at', 'desc')->get();
         
@@ -53,6 +56,7 @@ class ExpeditionController extends Controller
         $fleets = Fleet::with('fleetType:id,name')->orderBy('plate_number')->get(['id', 'plate_number', 'description', 'fleet_type_id']);
         $drivers = Driver::orderBy('name')->get(['id', 'name', 'phone', 'email']);
         $customers = \App\Models\Customer::orderBy('name')->get(['id', 'name', 'address', 'phone', 'email', 'npwp', 'pic_name', 'pic_phone']);
+        $consignees = \App\Models\Consignee::orderBy('company')->get(['id', 'company', 'address', 'phone', 'email']);
 
         return Inertia::render('Expeditions/Create', [
             'industrySectors' => $industrySectors,
@@ -61,6 +65,7 @@ class ExpeditionController extends Controller
             'fleets' => $fleets,
             'drivers' => $drivers,
             'customers' => $customers,
+            'consignees' => $consignees,
         ]);
     }
 
@@ -70,8 +75,9 @@ class ExpeditionController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'order_number' => 'required|string|max:255|unique:expeditions,order_number',
             'input_date' => 'required|string|max:255',
-            'travel_date' => 'required|string|max:255',
+            'etd' => 'required|date',
             'origin' => 'required|string|max:255',
             'destination' => 'required|string|max:255',
             'distance' => 'required|integer|min:0',
@@ -84,7 +90,8 @@ class ExpeditionController extends Controller
             'fleet_id' => 'nullable|exists:fleets,id',
             'driver_id' => 'nullable|exists:drivers,id',
             'customer_id' => 'required|exists:customers,id',
-            'eta' => 'required|integer|min:1',
+            'consignee_id' => 'required|exists:consignees,id',
+            'eta' => 'required|date',
             // Cost fields for fleet expeditions
             'sales_amount' => 'nullable|integer|min:0',
             'deposit_cost' => 'nullable|integer|min:0',
@@ -120,9 +127,6 @@ class ExpeditionController extends Controller
         }
 
         $validated['user_id'] = auth()->id();
-        
-        // Generate automatic order number based on customer_id
-        $validated['order_number'] = $this->generateOrderNumber($validated['customer_id']);
 
         // Create the expedition
         $expedition = Expedition::create($validated);
@@ -163,39 +167,7 @@ class ExpeditionController extends Controller
             ->with('success', 'Expedition created successfully!');
     }
 
-    /**
-     * Generate a unique order number based on customer_id
-     */
-    private function generateOrderNumber(int $customerId): string
-    {
-        // Get customer information
-        $customer = \App\Models\Customer::find($customerId);
-        $customerCode = $customer ? strtoupper(substr($customer->name, 0, 3)) : 'CUS';
-        
-        // Get current year and month
-        $year = date('Y');
-        $month = date('m');
-        
-        // Get count of expeditions for this customer in current month
-        $count = Expedition::where('customer_id', $customerId)
-            ->whereYear('created_at', $year)
-            ->whereMonth('created_at', $month)
-            ->count();
-        
-        // Generate order number format: CUS-YYYYMM-001
-        $orderNumber = sprintf('%s-%s%02d-%03d', $customerCode, $year, $month, $count + 1);
-        
-        // Ensure uniqueness by checking if this order number already exists
-        $counter = 1;
-        $originalOrderNumber = $orderNumber;
-        
-        while (Expedition::where('order_number', $orderNumber)->exists()) {
-            $orderNumber = sprintf('%s-%s%02d-%03d', $customerCode, $year, $month, $count + 1 + $counter);
-            $counter++;
-        }
-        
-        return $orderNumber;
-    }
+
 
     /**
      * Display the specified expedition.
@@ -203,14 +175,17 @@ class ExpeditionController extends Controller
     public function show(Expedition $expedition): Response
     {
         $expedition->load([
-            'user:id,name',
+            'user:id,name,signature',
             'industrySector:id,name,description',
             'route:id,name,description',
             'vendor:id,company,address,city,pic,title_pic,phone,moda,fleet,area_service_coverage',
-            'fleet.driver:id,name,phone,email,address',
+            'driver:id,name,phone,email,address',
             'fleet.fleetType:id,name,description',
             'fleetCosts',
-            'vendorCosts'
+            'vendorCosts',
+            'customer:id,name,address,phone,email,npwp,pic_name,pic_phone',
+            'consignee:id,company,address,phone,email',
+            'expeditionGoods.goodDetails'
         ]);
 
         return Inertia::render('Expeditions/Show', [
@@ -224,8 +199,17 @@ class ExpeditionController extends Controller
     public function edit(Expedition $expedition): Response
     {
         $expedition->load([
+            'user:id,name',
+            'industrySector:id,name,description',
+            'route:id,name,description',
+            'vendor:id,company,address,city,pic,title_pic,phone,moda,fleet,area_service_coverage',
+            'driver:id,name,phone,email,address',
+            'fleet.fleetType:id,name,description',
             'fleetCosts',
-            'vendorCosts'
+            'vendorCosts',
+            'customer:id,name,address,phone,email,npwp,pic_name,pic_phone',
+            'consignee:id,company,address,phone,email',
+            'expeditionGoods.goodDetails'
         ]);
 
         $industrySectors = IndustrySector::orderBy('name')->get(['id', 'name', 'description']);
@@ -252,7 +236,7 @@ class ExpeditionController extends Controller
         $validated = $request->validate([
             'order_number' => 'required|string|max:255|unique:expeditions,order_number,' . $expedition->id,
             'input_date' => 'required|string|max:255',
-            'travel_date' => 'required|string|max:255',
+            'etd' => 'required|date',
             'origin' => 'required|string|max:255',
             'destination' => 'required|string|max:255',
             'distance' => 'required|integer|min:0',
@@ -264,7 +248,7 @@ class ExpeditionController extends Controller
             'vendor_id' => 'nullable|exists:vendors,id',
             'fleet_id' => 'nullable|exists:fleets,id',
             'driver_id' => 'nullable|exists:drivers,id',
-            'eta' => 'required|integer|min:1',
+            'eta' => 'required|date',
             // Cost fields for fleet expeditions
             'sales_amount' => 'nullable|integer|min:0',
             'deposit_cost' => 'nullable|integer|min:0',
@@ -343,6 +327,190 @@ class ExpeditionController extends Controller
 
         return redirect()->route('expeditions.index')
             ->with('success', 'Expedition updated successfully!');
+    }
+
+    /**
+     * Print shipping instruction for the specified expedition.
+     */
+    public function printShippingInstruction(Expedition $expedition): Response
+    {
+        $expedition->load([
+            'user:id,name,signature',
+            'industrySector:id,name,description',
+            'route:id,name,description',
+            'vendor:id,company,address,city,pic,title_pic,phone,moda,fleet,area_service_coverage',
+            'fleet.fleetType:id,name',
+            'driver:id,name,phone,email',
+            'customer:id,name,address,phone,email,npwp,pic_name,pic_phone',
+            'consignee:id,company,address,phone,email',
+            'expeditionGoods.goodDetails'
+        ]);
+        return Inertia::render('Expeditions/PrintShippingInstruction', [
+            'expedition' => $expedition,
+        ]);
+    }
+
+    /**
+     * Show goods for the specified expedition.
+     */
+    public function showGoods(Expedition $expedition): Response
+    {
+        $expedition->load([
+            'expeditionGoods.goodDetails',
+            'user:id,name',
+            'customer:id,name',
+            'consignee:id,company'
+        ]);
+
+        return Inertia::render('Expeditions/Goods/Show', [
+            'expedition' => $expedition,
+        ]);
+    }
+
+    /**
+     * Show the form for creating goods for the specified expedition.
+     */
+    public function createGoods(Expedition $expedition): Response
+    {
+        $expedition->load([
+            'user:id,name',
+            'customer:id,name',
+            'consignee:id,company',
+            'expeditionGoods.goodDetails'
+        ]);
+
+        return Inertia::render('Expeditions/Goods/Create', [
+            'expedition' => $expedition,
+        ]);
+    }
+
+    /**
+     * Show the form for editing goods for the specified expedition.
+     */
+    public function editGoods(Expedition $expedition): Response
+    {
+        $expedition->load([
+            'expeditionGoods.goodDetails',
+            'user:id,name',
+            'customer:id,name',
+            'consignee:id,company'
+        ]);
+
+        return Inertia::render('Expeditions/Goods/Edit', [
+            'expedition' => $expedition,
+        ]);
+    }
+
+    /**
+     * Store goods for the specified expedition.
+     */
+    public function storeGoods(Request $request, Expedition $expedition)
+    {
+        $validated = $request->validate([
+            'remark_dispatch' => 'nullable|string|max:255',
+            'remark_receive' => 'nullable|string|max:255',
+            'date_dispatch' => 'nullable|date',
+            'date_receive' => 'nullable|date',
+            'total_goods' => 'nullable|integer|min:0',
+            'gross_weight' => 'nullable|integer|min:0',
+            'dimension_total' => 'nullable|integer|min:0',
+            'packaging' => 'nullable|string|max:255',
+            'good_description' => 'nullable|string',
+            'special_instruction' => 'nullable|string',
+            'goods' => 'required|array|min:1',
+            'goods.*.name' => 'required|string|max:255',
+            'goods.*.quantity' => 'required|string|max:255',
+            'goods.*.unit' => 'required|string|max:255',
+            'goods.*.remark' => 'nullable|string|max:255',
+        ]);
+
+        // Create or update expedition goods
+        $expeditionGoods = $expedition->expeditionGoods()->updateOrCreate(
+            ['expedition_id' => $expedition->id],
+            [
+                'remark_dispatch' => $validated['remark_dispatch'],
+                'remark_receive' => $validated['remark_receive'],
+                'date_dispatch' => $validated['date_dispatch'],
+                'date_receive' => $validated['date_receive'],
+                'total_goods' => $validated['total_goods'],
+                'gross_weight' => $validated['gross_weight'],
+                'dimension_total' => $validated['dimension_total'],
+                'packaging' => $validated['packaging'],
+                'good_description' => $validated['good_description'],
+                'special_instruction' => $validated['special_instruction'],
+            ]
+        );
+
+        // Delete existing good details and create new ones
+        $expeditionGoods->goodDetails()->delete();
+        
+        foreach ($validated['goods'] as $good) {
+            $expeditionGoods->goodDetails()->create([
+                'name' => $good['name'],
+                'quantity' => $good['quantity'],
+                'unit' => $good['unit'],
+                'remark' => $good['remark'] ?? null,
+            ]);
+        }
+
+        return redirect()->route('expeditions.goods.show', $expedition)
+            ->with('success', 'Goods created successfully!');
+    }
+
+    /**
+     * Update goods for the specified expedition.
+     */
+    public function updateGoods(Request $request, Expedition $expedition)
+    {
+        $validated = $request->validate([
+            'remark_dispatch' => 'nullable|string|max:255',
+            'remark_receive' => 'nullable|string|max:255',
+            'date_dispatch' => 'nullable|date',
+            'date_receive' => 'nullable|date',
+            'total_goods' => 'nullable|integer|min:0',
+            'gross_weight' => 'nullable|integer|min:0',
+            'dimension_total' => 'nullable|integer|min:0',
+            'packaging' => 'nullable|string|max:255',
+            'good_description' => 'nullable|string',
+            'special_instruction' => 'nullable|string',
+            'goods' => 'required|array|min:1',
+            'goods.*.name' => 'required|string|max:255',
+            'goods.*.quantity' => 'required|string|max:255',
+            'goods.*.unit' => 'required|string|max:255',
+            'goods.*.remark' => 'nullable|string|max:255',
+        ]);
+
+        // Update or create expedition goods
+        $expeditionGoods = $expedition->expeditionGoods()->updateOrCreate(
+            ['expedition_id' => $expedition->id],
+            [
+                'remark_dispatch' => $validated['remark_dispatch'],
+                'remark_receive' => $validated['remark_receive'],
+                'date_dispatch' => $validated['date_dispatch'],
+                'date_receive' => $validated['date_receive'],
+                'total_goods' => $validated['total_goods'],
+                'gross_weight' => $validated['gross_weight'],
+                'dimension_total' => $validated['dimension_total'],
+                'packaging' => $validated['packaging'],
+                'good_description' => $validated['good_description'],
+                'special_instruction' => $validated['special_instruction'],
+            ]
+        );
+
+        // Delete existing good details and create new ones
+        $expeditionGoods->goodDetails()->delete();
+        
+        foreach ($validated['goods'] as $good) {
+            $expeditionGoods->goodDetails()->create([
+                'name' => $good['name'],
+                'quantity' => $good['quantity'],
+                'unit' => $good['unit'],
+                'remark' => $good['remark'] ?? null,
+            ]);
+        }
+
+        return redirect()->route('expeditions.goods.show', $expedition)
+            ->with('success', 'Goods updated successfully!');
     }
 
     /**

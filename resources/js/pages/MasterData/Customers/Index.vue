@@ -4,21 +4,30 @@
       <!-- Header -->
       <div class="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900">Customers</h1>
-          <p class="text-gray-600 mt-2">Manage your customer database and track customer relationships</p>
+          <h1 class="text-2xl font-bold text-gray-900">Customers</h1>
+          <p class="text-muted-foreground">Manage your customer database and track customer relationships</p>
         </div>
         <Link 
           :href="route('customers.create')" 
-          class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-sm"
+          class="inline-flex items-center px-4 py-2 bg-black text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
         >
-          <Icon name="plus" class="mr-2 h-5 w-5" />
+          <Icon name="plus" class="mr-2 h-4 w-4" />
           Add Customer
         </Link>
       </div>
 
+      <!-- Success/Error Messages -->
+      <div v-if="($page.props.flash as any)?.success" class="bg-green-50 border border-green-200 rounded-lg p-4">
+        <p class="text-green-800">{{ ($page.props.flash as any)?.success }}</p>
+      </div>
+      
+      <div v-if="($page.props.flash as any)?.error" class="bg-red-50 border border-red-200 rounded-lg p-4">
+        <p class="text-red-800">{{ ($page.props.flash as any)?.error }}</p>
+      </div>
+
       <!-- Search and Filters -->
       <Card>
-        <CardContent class="p-6">
+        <CardContent>
           <div class="flex flex-col space-y-4 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
             <div class="flex-1 relative">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -28,7 +37,7 @@
                 v-model="searchQuery"
                 type="text"
                 placeholder="Search customers by name, email, phone, or PIC..."
-                class="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                class="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 @input="handleSearchInput"
                 @keyup.enter="performSearch"
               />
@@ -51,15 +60,16 @@
                 </select>
                 <span class="text-sm text-gray-500">per page</span>
               </div>
-              <button
+              <Button
                 v-if="hasSearchQuery"
+                variant="outline"
                 @click="clearSearch"
-                class="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors flex items-center space-x-2"
+                class="shrink-0"
                 title="Clear search and filters"
               >
-                <Icon name="x" class="h-4 w-4" />
-                <span>Clear</span>
-              </button>
+                <Icon name="x" class="mr-2 h-4 w-4" />
+                Clear
+              </Button>
             </div>
           </div>
         </CardContent>
@@ -67,6 +77,14 @@
 
       <!-- Customers Table -->
       <Card>
+        <CardHeader>
+          <div>
+            <CardTitle>Customers List</CardTitle>
+            <CardDescription>
+              View and manage all customer information
+            </CardDescription>
+          </div>
+        </CardHeader>
         <CardContent class="p-0">
           <!-- Table Summary -->
           <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
@@ -98,163 +116,146 @@
               </div>
             </div>
             
-            <table class="w-full">
-              <thead class="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th class="text-left font-semibold text-gray-900 p-4">Name</th>
-                  <th class="text-left font-semibold text-gray-900 p-4">Contact Info</th>
-                  <th class="text-left font-semibold text-gray-900 p-4">PIC</th>
-                  <th class="text-left font-semibold text-gray-900 p-4">NPWP</th>
-                  <th class="text-left font-semibold text-gray-900 p-4">Expeditions</th>
-                  <th class="text-left font-semibold text-gray-900 p-4">Actions</th>
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b">
+                  <th class="text-left font-medium p-4">Name</th>
+                  <th class="text-left font-medium p-4">Contact Info</th>
+                  <th class="text-left font-medium p-4">PIC</th>
+                  <th class="text-left font-medium p-4">NPWP</th>
+                  <th class="text-left font-medium p-4">Created</th>
+                  <th class="text-left font-medium p-4">Actions</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-200">
-                <tr v-for="customer in customers.data" :key="customer.id" class="hover:bg-gray-50 transition-colors duration-150">
+              <tbody>
+                <tr v-for="customer in customers.data" :key="customer.id" class="border-b hover:bg-gray-50 transition-colors">
                   <td class="p-4">
                     <div>
-                      <div class="font-medium text-gray-900">{{ customer.name }}</div>
-                      <div v-if="customer.address" class="text-sm text-gray-500 mt-1">{{ customer.address }}</div>
+                      <p class="font-medium text-gray-900">{{ customer.name }}</p>
+                      <p v-if="customer.address" class="text-sm text-gray-500 mt-1">{{ customer.address }}</p>
                     </div>
                   </td>
                   <td class="p-4">
-                    <div class="text-sm space-y-1">
-                      <div v-if="customer.phone" class="flex items-center">
-                        <Icon name="phone" class="h-4 w-4 text-gray-400 mr-2" />
+                    <div class="space-y-1">
+                      <div v-if="customer.phone" class="flex items-center text-sm text-gray-600">
+                        <Icon name="phone" class="h-4 w-4 mr-2 text-gray-400" />
                         {{ customer.phone }}
                       </div>
-                      <div v-if="customer.email" class="flex items-center">
-                        <Icon name="mail" class="h-4 w-4 text-gray-400 mr-2" />
-                        <span class="text-blue-600 hover:text-blue-800">{{ customer.email }}</span>
+                      <div v-if="customer.email" class="flex items-center text-sm text-gray-600">
+                        <Icon name="mail" class="h-4 w-4 mr-2 text-gray-400" />
+                        {{ customer.email }}
                       </div>
                     </div>
                   </td>
                   <td class="p-4">
-                    <div v-if="customer.pic_name" class="text-sm">
-                      <div class="font-medium text-gray-900">{{ customer.pic_name }}</div>
-                      <div v-if="customer.pic_phone" class="text-gray-500 mt-1 flex items-center">
-                        <Icon name="phone" class="h-4 w-4 text-gray-400 mr-1" />
-                        {{ customer.pic_phone }}
-                      </div>
+                    <div v-if="customer.pic_name" class="space-y-1">
+                      <p class="text-sm font-medium text-gray-900">{{ customer.pic_name }}</p>
+                      <p v-if="customer.pic_phone" class="text-sm text-gray-500">{{ customer.pic_phone }}</p>
                     </div>
-                    <span v-else class="text-gray-400 text-sm">-</span>
+                    <span v-else class="text-gray-400">-</span>
                   </td>
                   <td class="p-4">
-                    <span v-if="customer.npwp" class="text-sm font-mono bg-gray-100 px-2 py-1 rounded">{{ customer.npwp }}</span>
-                    <span v-else class="text-gray-400 text-sm">-</span>
+                    <span v-if="customer.npwp" class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">{{ customer.npwp }}</span>
+                    <span v-else class="text-gray-400">-</span>
                   </td>
-                  <td class="p-4">
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      <Icon name="truck" class="h-3 w-3 mr-1" />
-                      {{ customer.expeditions_count || 0 }} expeditions
-                    </span>
-                  </td>
+                  <td class="p-4 text-gray-500">{{ formatDate(customer.created_at) }}</td>
                   <td class="p-4">
                     <div class="flex items-center space-x-2">
-                      <Link 
-                        :href="route('customers.show', customer.id)" 
-                        class="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors"
-                        title="View customer details"
-                      >
-                        <Icon name="eye" class="h-4 w-4" />
-                      </Link>
-                      <Link 
-                        :href="route('customers.edit', customer.id)" 
-                        class="text-green-600 hover:text-green-800 p-1 rounded hover:bg-green-50 transition-colors"
-                        title="Edit customer"
-                      >
-                        <Icon name="edit" class="h-4 w-4" />
-                      </Link>
-                      <button
-                        @click="confirmDelete(customer)"
-                        class="text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed p-1 rounded hover:bg-red-50 transition-colors"
-                        :disabled="(customer.expeditions_count || 0) > 0"
-                        :title="(customer.expeditions_count || 0) > 0 ? 'Cannot delete customer with expeditions' : 'Delete customer'"
+                      <Button variant="outline" size="sm" as-child>
+                        <Link :href="route('customers.show', customer.id)">
+                          <Icon name="eye" class="h-4 w-4" />
+                        </Link>
+                      </Button>
+                      <Button variant="outline" size="sm" as-child>
+                        <Link :href="route('customers.edit', customer.id)">
+                          <Icon name="edit" class="h-4 w-4" />
+                        </Link>
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        @click="deleteCustomer(customer)"
+                        class="text-red-600 hover:text-red-700"
                       >
                         <Icon name="trash" class="h-4 w-4" />
-                      </button>
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+                <tr v-if="customers.data.length === 0">
+                  <td colspan="6" class="p-8 text-center text-gray-500">
+                    <div class="flex flex-col items-center space-y-2">
+                      <Icon name="users" class="h-12 w-12 text-gray-300" />
+                      <p class="text-lg font-medium">No customers found</p>
+                      <p class="text-sm">Create your first customer to get started.</p>
                     </div>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
-
-          <!-- No Data State -->
-          <div v-if="customers.data.length === 0" class="p-12 text-center text-gray-500">
-            <Icon name="users" class="mx-auto h-16 w-16 text-gray-300 mb-4" />
-            <p class="text-xl font-medium text-gray-900 mb-2">
-              {{ searchQuery ? 'No customers found matching your search' : 'No customers found' }}
-            </p>
-            <p class="text-gray-600 mb-6">
-              {{ searchQuery ? 'Try adjusting your search terms or clear your search to see all customers.' : 'Create your first customer to get started with managing your customer database.' }}
-            </p>
-            <Link 
-              v-if="!searchQuery" 
-              :href="route('customers.create')" 
-              class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-            >
-              <Icon name="plus" class="mr-2 h-5 w-5" />
-              Add Customer
-            </Link>
-          </div>
         </CardContent>
       </Card>
 
       <!-- Pagination -->
-      <div v-if="customers.links && customers.links.length > 3" class="flex justify-center">
-        <nav class="flex space-x-1">
-          <Link
-            v-for="link in customers.links"
-            :key="link.label"
-            :href="link.url || '#'"
-            :class="[
-              'px-4 py-2 text-sm font-medium rounded-md transition-colors',
-              link.active
-                ? 'bg-blue-600 text-white shadow-sm'
-                : link.url
-                ? 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 hover:border-gray-400'
-                : 'text-gray-400 bg-white border border-gray-200 cursor-not-allowed'
-            ]"
-            v-html="link.label"
-          />
-        </nav>
+      <div v-if="customers.last_page > 1" class="flex items-center justify-between">
+        <div class="flex-1 flex justify-between sm:hidden">
+          <Link 
+            v-if="customers.prev_page_url"
+            :href="customers.prev_page_url"
+            class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+          >
+            Previous
+          </Link>
+          <Link 
+            v-if="customers.next_page_url"
+            :href="customers.next_page_url"
+            class="ml-3 relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+          >
+            Next
+          </Link>
+        </div>
+        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+          <div>
+            <p class="text-sm text-gray-700">
+              Showing
+              <span class="font-medium">{{ customers.from }}</span>
+              to
+              <span class="font-medium">{{ customers.to }}</span>
+              of
+              <span class="font-medium">{{ customers.total }}</span>
+              results
+            </p>
+          </div>
+          <div>
+            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+              <template v-for="link in customers.links" :key="link.label">
+                <Link 
+                  v-if="link.url"
+                  :href="link.url"
+                  :class="[
+                    'relative inline-flex items-center px-4 py-2 text-sm font-medium border',
+                    link.active 
+                      ? 'z-10 bg-blue-50 border-blue-500 text-blue-600' 
+                      : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                  ]"
+                  v-html="link.label"
+                />
+                <span 
+                  v-else
+                  :class="[
+                    'relative inline-flex items-center px-4 py-2 text-sm font-medium border cursor-not-allowed opacity-50',
+                    'bg-white border-gray-300 text-gray-400'
+                  ]"
+                  v-html="link.label"
+                />
+              </template>
+            </nav>
+          </div>
+        </div>
       </div>
     </div>
   </AppLayout>
-  
-  <!-- Delete Confirmation Dialog -->
-  <Dialog v-model:open="showDeleteDialog">
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>Delete Customer</DialogTitle>
-        <DialogDescription>
-          Are you sure you want to delete "{{ customerToDelete?.name }}"? This action cannot be undone.
-          <span v-if="customerToDelete?.expeditions_count && customerToDelete.expeditions_count > 0" class="block mt-2 text-red-600">
-            This customer has {{ customerToDelete.expeditions_count }} expeditions and cannot be deleted.
-          </span>
-        </DialogDescription>
-      </DialogHeader>
-      
-      <DialogFooter>
-        <button
-          @click="closeDeleteDialog"
-          class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
-          Cancel
-        </button>
-        <button
-          v-if="customerToDelete && (!customerToDelete.expeditions_count || customerToDelete.expeditions_count === 0)"
-          @click="deleteCustomer"
-          :disabled="isDeleting"
-          class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
-        >
-          <Icon v-if="isDeleting" name="loader" class="mr-2 h-4 w-4 animate-spin" />
-          {{ isDeleting ? 'Deleting...' : 'Delete' }}
-        </button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
 </template>
 
 <script setup lang="ts">
@@ -264,12 +265,10 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import Icon from '@/components/Icon.vue'
 import Card from '@/components/ui/card/Card.vue'
 import CardContent from '@/components/ui/card/CardContent.vue'
-import Dialog from '@/components/ui/dialog/Dialog.vue'
-import DialogContent from '@/components/ui/dialog/DialogContent.vue'
-import DialogHeader from '@/components/ui/dialog/DialogHeader.vue'
-import DialogTitle from '@/components/ui/dialog/DialogTitle.vue'
-import DialogDescription from '@/components/ui/dialog/DialogDescription.vue'
-import DialogFooter from '@/components/ui/dialog/DialogFooter.vue'
+import CardHeader from '@/components/ui/card/CardHeader.vue'
+import CardTitle from '@/components/ui/card/CardTitle.vue'
+import CardDescription from '@/components/ui/card/CardDescription.vue'
+import Button from '@/components/ui/button/Button.vue'
 
 interface Customer {
   id: number
@@ -298,6 +297,8 @@ interface PaginatedData {
   }>
   from: number
   to: number
+  prev_page_url: string | null
+  next_page_url: string | null
 }
 
 interface Props {
@@ -368,11 +369,11 @@ const confirmDelete = (customer: Customer) => {
   showDeleteDialog.value = true
 }
 
-const deleteCustomer = () => {
-  if (!customerToDelete.value) return
+const deleteCustomer = (customer: Customer) => {
+  if (!customer || !customer.id) return
   
   isDeleting.value = true
-  router.delete(route('customers.destroy', customerToDelete.value.id), {
+  router.delete(route('customers.destroy', customer.id), {
     onSuccess: () => {
       closeDeleteDialog()
       isDeleting.value = false
@@ -419,5 +420,11 @@ const debouncedSearch = () => {
 // Update the input event to use debounced search
 const handleSearchInput = () => {
   debouncedSearch()
+}
+
+// Helper function for date formatting
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString)
+  return date.toLocaleDateString()
 }
 </script>

@@ -19,6 +19,7 @@ class ProfileController extends Controller
     {
         return Inertia::render('settings/Profile', [
             'status' => $request->session()->get('status'),
+            'user' => $request->user()->only(['name', 'email', 'signature']),
         ]);
     }
 
@@ -27,7 +28,32 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $data = $request->validated();
+        
+        // Handle signature if provided and not empty
+        if ($request->has('signature') && $request->signature && $request->signature !== '') {
+            $signatureData = $request->signature;
+            if (strpos($signatureData, 'data:image/') === 0) {
+                // Delete old signature if exists
+                if ($request->user()->signature) {
+                    \Storage::disk('public')->delete($request->user()->signature);
+                }
+                
+                // Convert base64 to file and store
+                $imageData = base64_decode(explode(',', $signatureData)[1]);
+                $filename = 'signature_' . $request->user()->id . '_' . time() . '.png';
+                $path = 'signatures/' . $filename;
+                
+                // Store file
+                \Storage::disk('public')->put($path, $imageData);
+                $data['signature'] = $path;
+            }
+        } else {
+            // If signature is empty or not provided, remove it from data to keep existing
+            unset($data['signature']);
+        }
+        
+        $request->user()->fill($data);
         $request->user()->save();
 
         return to_route('profile.edit');

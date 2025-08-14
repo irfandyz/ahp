@@ -5,31 +5,24 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, Edit, Trash2, Eye, Building2, Mail, Phone, MapPin, User, FileText, Car, Globe, X } from 'lucide-vue-next';
+import { Plus, Search, Edit, Trash2, Eye, Building2, Mail, Phone, MapPin, FileText, X } from 'lucide-vue-next';
 import { type BreadcrumbItem } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-interface Vendor {
+interface Consignee {
     id: number;
     company: string;
     address: string;
-    city: string;
-    pic: string;
-    title_pic: string;
     phone: string;
-    moda: string;
-    fleet: string;
-    area_service_coverage: string;
+    email: string;
     expeditions_count: number;
     created_at: string;
     updated_at: string;
 }
 
 interface Props {
-    vendors: {
-        data: Vendor[];
+    consignees: {
+        data: Consignee[];
         current_page: number;
         last_page: number;
         per_page: number;
@@ -47,39 +40,37 @@ const breadcrumbItems: BreadcrumbItem[] = [
         href: '#',
     },
     {
-        title: 'Vendors',
-        href: '/vendors',
+        title: 'Consignees',
+        href: '/consignees',
     },
 ];
 
 const searchQuery = ref('');
 const isDeleteDialogOpen = ref(false);
-const vendorToDelete = ref<Vendor | null>(null);
-const pageSize = ref<number>(props.vendors.per_page);
+const consigneeToDelete = ref<Consignee | null>(null);
 
 const deleteForm = useForm({});
 
-const filteredVendors = computed(() => {
-    if (!searchQuery.value) return props.vendors.data;
+const filteredConsignees = computed(() => {
+    if (!searchQuery.value) return props.consignees.data;
     
-    return props.vendors.data.filter(vendor =>
-        vendor.company.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        vendor.pic.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        vendor.city.toLowerCase().includes(searchQuery.value.toLowerCase())
+    return props.consignees.data.filter(consignee =>
+        consignee.company.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        consignee.email.toLowerCase().includes(searchQuery.value.toLowerCase())
     );
 });
 
-const openDeleteDialog = (vendor: Vendor) => {
-    vendorToDelete.value = vendor;
+const openDeleteDialog = (consignee: Consignee) => {
+    consigneeToDelete.value = consignee;
     isDeleteDialogOpen.value = true;
 };
 
 const confirmDelete = () => {
-    if (vendorToDelete.value) {
-        deleteForm.delete(`/vendors/${vendorToDelete.value.id}`, {
+    if (consigneeToDelete.value) {
+        deleteForm.delete(`/consignees/${consigneeToDelete.value.id}`, {
             onSuccess: () => {
                 isDeleteDialogOpen.value = false;
-                vendorToDelete.value = null;
+                consigneeToDelete.value = null;
             },
         });
     }
@@ -88,56 +79,22 @@ const confirmDelete = () => {
 const clearSearch = () => {
     searchQuery.value = '';
 };
-
-const getVisiblePages = (): (number | string)[] => {
-    const current = props.vendors.current_page;
-    const last = props.vendors.last_page;
-    const delta = 2;
-    
-    const range: number[] = [];
-    const rangeWithDots: (number | string)[] = [];
-    
-    for (let i = Math.max(2, current - delta); i <= Math.min(last - 1, current + delta); i++) {
-        range.push(i);
-    }
-    
-    if (current - delta > 2) {
-        rangeWithDots.push(1, '...');
-    } else {
-        rangeWithDots.push(1);
-    }
-    
-    rangeWithDots.push(...range);
-    
-    if (current + delta < last - 1) {
-        rangeWithDots.push('...', last);
-    } else if (last > 1) {
-        rangeWithDots.push(last);
-    }
-    
-    return rangeWithDots;
-};
-
-const changePageSize = (newSize: string) => {
-    pageSize.value = parseInt(newSize);
-    window.location.href = `/vendors?page=1&per_page=${newSize}`;
-};
 </script>
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbItems">
-        <Head title="Vendors" />
+        <Head title="Consignees" />
 
         <div class="space-y-6 p-5">
             <!-- Header -->
             <div class="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Vendors</h1>
-                    <p class="text-muted-foreground">Manage your vendor master data</p>
+                    <h1 class="text-2xl font-bold text-gray-900">Consignees</h1>
+                    <p class="text-muted-foreground">Manage your consignee master data</p>
                 </div>
-                <Link :href="route('vendors.create')" class="inline-flex items-center px-4 py-2 bg-black text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                <Link :href="route('consignees.create')" class="inline-flex items-center px-4 py-2 bg-black text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
                     <Plus class="mr-2 h-4 w-4" />
-                    Add Vendor
+                    Add Consignee
                 </Link>
             </div>
 
@@ -160,7 +117,7 @@ const changePageSize = (newSize: string) => {
                             </div>
                             <Input
                                 v-model="searchQuery"
-                                placeholder="Search vendors by company, PIC, city, or services..."
+                                placeholder="Search consignees by company or email..."
                                 class="pl-10 w-full"
                             />
                         </div>
@@ -177,13 +134,13 @@ const changePageSize = (newSize: string) => {
                 </CardContent>
             </Card>
 
-            <!-- Vendors Table -->
+            <!-- Consignees Table -->
             <Card>
                 <CardHeader>
                     <div>
-                        <CardTitle>Vendors List</CardTitle>
+                        <CardTitle>Consignees List</CardTitle>
                         <CardDescription>
-                            View and manage all vendor information
+                            View and manage all consignee information
                         </CardDescription>
                     </div>
                 </CardHeader>
@@ -194,14 +151,13 @@ const changePageSize = (newSize: string) => {
                                 <tr class="border-b">
                                     <th class="text-left font-medium p-4">Company</th>
                                     <th class="text-left font-medium p-4">Contact Info</th>
-                                    <th class="text-left font-medium p-4">Location</th>
-                                    <th class="text-left font-medium p-4">Services</th>
+                                    <th class="text-left font-medium p-4">Address</th>
                                     <th class="text-left font-medium p-4">Expeditions</th>
                                     <th class="text-left font-medium p-4">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="vendor in filteredVendors" :key="vendor.id" class="border-b hover:bg-gray-50 transition-colors">
+                                <tr v-for="consignee in filteredConsignees" :key="consignee.id" class="border-b hover:bg-gray-50 transition-colors">
                                     <td class="p-4">
                                         <div class="flex items-center">
                                             <div class="flex-shrink-0 h-10 w-10">
@@ -210,8 +166,7 @@ const changePageSize = (newSize: string) => {
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <div class="font-medium text-gray-900">{{ vendor.company }}</div>
-                                                <div class="text-sm text-gray-500">{{ vendor.pic }} - {{ vendor.title_pic }}</div>
+                                                <div class="font-medium text-gray-900">{{ consignee.company }}</div>
                                             </div>
                                         </div>
                                     </td>
@@ -219,11 +174,11 @@ const changePageSize = (newSize: string) => {
                                         <div class="space-y-1">
                                             <div class="flex items-center text-sm text-gray-600">
                                                 <Phone class="h-4 w-4 mr-2 text-gray-400" />
-                                                {{ vendor.phone }}
+                                                {{ consignee.phone }}
                                             </div>
                                             <div class="flex items-center text-sm text-gray-600">
                                                 <Mail class="h-4 w-4 mr-2 text-gray-400" />
-                                                {{ vendor.pic }}
+                                                {{ consignee.email }}
                                             </div>
                                         </div>
                                     </td>
@@ -231,43 +186,32 @@ const changePageSize = (newSize: string) => {
                                         <div class="space-y-1">
                                             <div class="flex items-center text-sm text-gray-600">
                                                 <MapPin class="h-4 w-4 mr-2 text-gray-400" />
-                                                {{ vendor.address }}
+                                                {{ consignee.address }}
                                             </div>
-                                            <div class="text-sm text-gray-600">{{ vendor.city }}</div>
-                                        </div>
-                                    </td>
-                                    <td class="p-4">
-                                        <div class="space-y-1">
-                                            <div class="flex items-center text-sm text-gray-600">
-                                                <Car class="h-4 w-4 mr-2 text-gray-400" />
-                                                {{ vendor.moda === 'land' ? 'Land' : vendor.moda === 'air' ? 'Air' : vendor.moda === 'sea' ? 'Sea' : vendor.moda }}
-                                            </div>
-                                            <div class="text-sm text-gray-600">{{ vendor.fleet }}</div>
-                                            <div class="text-sm text-gray-600">{{ vendor.area_service_coverage }}</div>
                                         </div>
                                     </td>
                                     <td class="p-4 text-gray-500">
                                         <div class="flex items-center">
                                             <FileText class="h-4 w-4 mr-2 text-gray-400" />
-                                            {{ vendor.expeditions_count || 0 }}
+                                            {{ consignee.expeditions_count || 0 }}
                                         </div>
                                     </td>
                                     <td class="p-4">
                                         <div class="flex items-center space-x-2">
                                             <Button variant="outline" size="sm" as-child>
-                                                <Link :href="route('vendors.show', vendor.id)">
+                                                <Link :href="route('consignees.show', consignee.id)">
                                                     <Eye class="h-4 w-4" />
                                                 </Link>
                                             </Button>
                                             <Button variant="outline" size="sm" as-child>
-                                                <Link :href="route('vendors.edit', vendor.id)">
+                                                <Link :href="route('consignees.edit', consignee.id)">
                                                     <Edit class="h-4 w-4" />
                                                 </Link>
                                             </Button>
                                             <Button 
                                                 variant="outline" 
                                                 size="sm" 
-                                                @click="openDeleteDialog(vendor)"
+                                                @click="openDeleteDialog(consignee)"
                                                 class="text-red-600 hover:text-red-700"
                                             >
                                                 <Trash2 class="h-4 w-4" />
@@ -275,12 +219,12 @@ const changePageSize = (newSize: string) => {
                                         </div>
                                     </td>
                                 </tr>
-                                <tr v-if="filteredVendors.length === 0">
-                                    <td colspan="6" class="p-8 text-center text-gray-500">
+                                <tr v-if="filteredConsignees.length === 0">
+                                    <td colspan="5" class="p-8 text-center text-gray-500">
                                         <div class="flex flex-col items-center space-y-2">
                                             <Building2 class="h-12 w-12 text-gray-300" />
-                                            <p class="text-lg font-medium">No vendors found</p>
-                                            <p class="text-sm">Create your first vendor to get started.</p>
+                                            <p class="text-lg font-medium">No consignees found</p>
+                                            <p class="text-sm">Create your first consignee to get started.</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -295,11 +239,11 @@ const changePageSize = (newSize: string) => {
         <Dialog v-model:open="isDeleteDialogOpen">
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Delete Vendor</DialogTitle>
+                    <DialogTitle>Delete Consignee</DialogTitle>
                     <DialogDescription>
-                        Are you sure you want to delete "{{ vendorToDelete?.company }}"? This action cannot be undone.
-                        <span v-if="vendorToDelete?.expeditions_count && vendorToDelete.expeditions_count > 0" class="block mt-2 text-red-600">
-                            This vendor has {{ vendorToDelete.expeditions_count }} expeditions and cannot be deleted.
+                        Are you sure you want to delete "{{ consigneeToDelete?.company }}"? This action cannot be undone.
+                        <span v-if="consigneeToDelete?.expeditions_count && consigneeToDelete.expeditions_count > 0" class="block mt-2 text-red-600">
+                            This consignee has {{ consigneeToDelete.expeditions_count }} expeditions and cannot be deleted.
                         </span>
                     </DialogDescription>
                 </DialogHeader>
@@ -308,7 +252,7 @@ const changePageSize = (newSize: string) => {
                         Cancel
                     </Button>
                     <Button 
-                        v-if="!vendorToDelete?.expeditions_count || vendorToDelete.expeditions_count === 0"
+                        v-if="!consigneeToDelete?.expeditions_count || consigneeToDelete.expeditions_count === 0"
                         variant="destructive" 
                         @click="confirmDelete"
                     >

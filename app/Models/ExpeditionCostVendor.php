@@ -14,8 +14,13 @@ class ExpeditionCostVendor extends Model
      */
     protected $fillable = [
         'expedition_id',
-        'vendor_id',
-        'cost',
+        'sales_amount',
+        'vendor_cost',
+        'deposit_cost',
+        'deposit_date',
+        'other_cost',
+        'description',
+        'total_cost',
     ];
 
     /**

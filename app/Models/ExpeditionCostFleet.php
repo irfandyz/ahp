@@ -14,8 +14,18 @@ class ExpeditionCostFleet extends Model
      */
     protected $fillable = [
         'expedition_id',
-        'fleet_id',
-        'cost',
+        'sales_amount',
+        'deposit_cost',
+        'deposit_date',
+        'transportation_cost',
+        'fuel_cost',
+        'tolling_cost',
+        'port_cost',
+        'insurance_cost',
+        'driver_cost',
+        'other_cost',
+        'description',
+        'total_cost',
     ];
 
     /**

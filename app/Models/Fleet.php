@@ -34,4 +34,5 @@ class Fleet extends Model
     {
         return $this->hasMany(Expedition::class);
     }
+    
 }

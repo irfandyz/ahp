@@ -8,21 +8,13 @@ import { Separator } from '@/components/ui/separator';
 import { 
     ArrowLeft, 
     Edit, 
-    Trash2, 
     Building2, 
     MapPin, 
     Phone, 
-    User, 
+    Mail, 
     FileText, 
-    Car, 
-    Globe, 
     Calendar,
-    Truck,
-    Ship,
-    Train,
-    Plane,
-    Package,
-    Route
+    Package
 } from 'lucide-vue-next';
 import { type BreadcrumbItem } from '@/types';
 
@@ -35,17 +27,12 @@ interface Expedition {
     updated_at: string;
 }
 
-interface Vendor {
+interface Consignee {
     id: number;
     company: string;
     address: string;
-    city: string;
-    pic: string;
-    title_pic: string;
     phone: string;
-    moda: string;
-    fleet: string;
-    area_service_coverage: string;
+    email: string;
     expeditions: Expedition[];
     expeditions_count: number;
     created_at: string;
@@ -53,7 +40,7 @@ interface Vendor {
 }
 
 interface Props {
-    vendor: Vendor;
+    consignee: Consignee;
 }
 
 const props = defineProps<Props>();
@@ -64,57 +51,14 @@ const breadcrumbItems: BreadcrumbItem[] = [
         href: '#',
     },
     {
-        title: 'Vendors',
-        href: '/vendors',
+        title: 'Consignees',
+        href: '/consignees',
     },
     {
-        title: props.vendor.company,
-        href: `/vendors/${props.vendor.id}`,
+        title: props.consignee.company,
+        href: `/consignees/${props.consignee.id}`,
     },
 ];
-
-const getModaIcon = (moda: string) => {
-    switch (moda.toLowerCase()) {
-        case 'truck':
-            return Truck;
-        case 'ship':
-            return Ship;
-        case 'train':
-            return Train;
-        case 'air':
-            return Plane;
-        default:
-            return Car;
-    }
-};
-
-const getModaColor = (moda: string) => {
-    switch (moda.toLowerCase()) {
-        case 'truck':
-            return 'bg-blue-100 text-blue-800 border-blue-200';
-        case 'ship':
-            return 'bg-indigo-100 text-indigo-800 border-indigo-200';
-        case 'train':
-            return 'bg-green-100 text-green-800 border-green-200';
-        case 'air':
-            return 'bg-purple-100 text-purple-800 border-purple-200';
-        default:
-            return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-};
-
-const getFleetColor = (fleet: string) => {
-    switch (fleet.toLowerCase()) {
-        case 'small':
-            return 'bg-green-100 text-green-800 border-green-200';
-        case 'medium':
-            return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-        case 'large':
-            return 'bg-red-100 text-red-800 border-red-200';
-        default:
-            return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-};
 
 const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -127,35 +71,35 @@ const formatDate = (dateString: string) => {
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbItems">
-        <Head :title="`${vendor.company} - Vendor Details`" />
+        <Head :title="`${consignee.company} - Consignee Details`" />
 
         <div class="space-y-6 p-5">
             <!-- Header -->
             <div class="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
                 <div class="flex items-center space-x-4">
-                    <Link :href="route('vendors.index')">
+                    <Link :href="route('consignees.index')">
                         <Button variant="outline" size="sm">
                             <ArrowLeft class="h-4 w-4 mr-2" />
-                            Back to Vendors
+                            Back to Consignees
                         </Button>
                     </Link>
                     <div>
-                        <h1 class="text-2xl font-bold">{{ vendor.company }}</h1>
-                        <p class="text-muted-foreground">Vendor Details & Information</p>
+                        <h1 class="text-2xl font-bold">{{ consignee.company }}</h1>
+                        <p class="text-muted-foreground">Consignee Details & Information</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-2">
-                    <Link :href="route('vendors.edit', vendor.id)">
+                    <Link :href="route('consignees.edit', consignee.id)">
                         <Button>
                             <Edit class="h-4 w-4 mr-2" />
-                            Edit Vendor
+                            Edit Consignee
                         </Button>
                     </Link>
                 </div>
             </div>
 
-            <!-- Vendor Information Cards -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Consignee Information Cards -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- Company Information -->
                 <Card>
                     <CardHeader>
@@ -166,7 +110,7 @@ const formatDate = (dateString: string) => {
                     </CardHeader>
                     <CardContent class="space-y-4">
                         <div>
-                            <h3 class="font-semibold text-gray-900">{{ vendor.company }}</h3>
+                            <h3 class="font-semibold text-gray-900">{{ consignee.company }}</h3>
                             <p class="text-sm text-gray-600">Company Name</p>
                         </div>
                         <Separator />
@@ -174,15 +118,8 @@ const formatDate = (dateString: string) => {
                             <div class="flex items-center">
                                 <MapPin class="h-4 w-4 mr-2 text-gray-400" />
                                 <div>
-                                    <p class="text-sm font-medium text-gray-900">{{ vendor.address }}</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ consignee.address }}</p>
                                     <p class="text-xs text-gray-500">Address</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center">
-                                <Globe class="h-4 w-4 mr-2 text-gray-400" />
-                                <div>
-                                    <p class="text-sm font-medium text-gray-900">{{ vendor.city }}</p>
-                                    <p class="text-xs text-gray-500">City</p>
                                 </div>
                             </div>
                         </div>
@@ -193,60 +130,25 @@ const formatDate = (dateString: string) => {
                 <Card>
                     <CardHeader>
                         <CardTitle class="flex items-center">
-                            <User class="h-5 w-5 mr-2 text-green-600" />
+                            <Mail class="h-5 w-5 mr-2 text-green-600" />
                             Contact Information
                         </CardTitle>
                     </CardHeader>
                     <CardContent class="space-y-4">
                         <div class="space-y-3">
-                            <div>
-                                <h3 class="font-semibold text-gray-900">{{ vendor.pic }}</h3>
-                                <p class="text-sm text-gray-600">{{ vendor.title_pic }}</p>
-                            </div>
-                            <Separator />
                             <div class="flex items-center">
                                 <Phone class="h-4 w-4 mr-2 text-gray-400" />
                                 <div>
-                                    <p class="text-sm font-medium text-gray-900">{{ vendor.phone }}</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ consignee.phone }}</p>
                                     <p class="text-xs text-gray-500">Phone Number</p>
                                 </div>
                             </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <!-- Service Information -->
-                <Card>
-                    <CardHeader>
-                        <CardTitle class="flex items-center">
-                            <Car class="h-5 w-5 mr-2 text-purple-600" />
-                            Service Information
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent class="space-y-4">
-                        <div class="space-y-3">
-                            <div class="flex items-center">
-                                <component :is="getModaIcon(vendor.moda)" class="h-4 w-4 mr-2 text-gray-400" />
-                                <div>
-                                    <Badge :class="getModaColor(vendor.moda)" class="border">
-                                        {{ vendor.moda === 'land' ? 'Land' : vendor.moda === 'air' ? 'Air' : vendor.moda === 'sea' ? 'Sea' : vendor.moda }}
-                                    </Badge>
-                                    <p class="text-xs text-gray-500 mt-1">Moda</p>
-                                </div>
-                            </div>
-                            <Separator />
-                            <div>
-                                <Badge :class="getFleetColor(vendor.fleet)" class="border">
-                                    {{ vendor.fleet }}
-                                </Badge>
-                                                                    <p class="text-xs text-gray-500 mt-1">Fleet</p>
-                            </div>
                             <Separator />
                             <div class="flex items-center">
-                                <Route class="h-4 w-4 mr-2 text-gray-400" />
+                                <Mail class="h-4 w-4 mr-2 text-gray-400" />
                                 <div>
-                                    <p class="text-sm font-medium text-gray-900">{{ vendor.area_service_coverage }}</p>
-                                    <p class="text-xs text-gray-500">Service Coverage Area</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ consignee.email }}</p>
+                                    <p class="text-xs text-gray-500">Email Address</p>
                                 </div>
                             </div>
                         </div>
@@ -260,15 +162,15 @@ const formatDate = (dateString: string) => {
                     <CardTitle class="flex items-center">
                         <Package class="h-5 w-5 mr-2 text-orange-600" />
                         Recent Expeditions
-                        <Badge variant="secondary" class="ml-2">{{ vendor.expeditions_count }}</Badge>
+                        <Badge variant="secondary" class="ml-2">{{ consignee.expeditions_count }}</Badge>
                     </CardTitle>
                     <CardDescription>
-                        Latest expeditions associated with this vendor
+                        Latest expeditions associated with this consignee
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div v-if="vendor.expeditions.length > 0" class="space-y-4">
-                        <div v-for="expedition in vendor.expeditions" :key="expedition.id" 
+                    <div v-if="consignee.expeditions.length > 0" class="space-y-4">
+                        <div v-for="expedition in consignee.expeditions" :key="expedition.id" 
                              class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                             <div class="flex items-center space-x-4">
                                 <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
@@ -293,7 +195,7 @@ const formatDate = (dateString: string) => {
                     <div v-else class="text-center py-8">
                         <Package class="h-12 w-12 text-gray-400 mx-auto mb-4" />
                         <h3 class="text-lg font-medium text-gray-900 mb-2">No Expeditions Yet</h3>
-                        <p class="text-gray-500">This vendor hasn't been associated with any expeditions yet.</p>
+                        <p class="text-gray-500">This consignee hasn't been associated with any expeditions yet.</p>
                     </div>
                 </CardContent>
             </Card>
@@ -310,11 +212,11 @@ const formatDate = (dateString: string) => {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <h4 class="font-medium text-gray-900 mb-2">Created</h4>
-                            <p class="text-sm text-gray-600">{{ formatDate(vendor.created_at) }}</p>
+                            <p class="text-sm text-gray-600">{{ formatDate(consignee.created_at) }}</p>
                         </div>
                         <div>
                             <h4 class="font-medium text-gray-900 mb-2">Last Updated</h4>
-                            <p class="text-sm text-gray-600">{{ formatDate(vendor.updated_at) }}</p>
+                            <p class="text-sm text-gray-600">{{ formatDate(consignee.updated_at) }}</p>
                         </div>
                     </div>
                 </CardContent>
